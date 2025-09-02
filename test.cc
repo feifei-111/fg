@@ -1,7 +1,7 @@
 #include "window/window.h"
 #include "event/event.h"
 
-#include "console.h"
+#include "debug.h"
 
 #include<stdio.h>
 
