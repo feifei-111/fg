@@ -3,13 +3,14 @@
 #include"event/event.h"
 
 
+
 namespace fei_window{
 
 
 struct EventListClass{
-    static constexpr capacity_ = 512;
+    static constexpr unsigned int capacity_ = 512;
 
-    Event[capacity_] events_;
+    Event events_[capacity_];
     unsigned int head_ = 0;
     unsigned int tail_ = 0;
     unsigned int count_ = 0;
@@ -26,13 +27,12 @@ struct EventListClass{
         }
         events_[tail_] = *event;
         tail_ = (tail_ + 1) % capacity_;
-        count_ += 1
+        count_ += 1;
         return true;
     }
 
     bool PopHeadEvent(Event* event){
         if (count_ == 0){
-            MessageBoxW(NULL, L"EventList empty when pop", L"Error", MB_ICONERROR);
             return false;
         }
         *event = events_[head_];
@@ -54,7 +54,8 @@ bool PushEvent(Event* event){
 
 bool PollEvent(Event* event){
 
-    if (event_list.Empty()){
+
+    if (EventList.Empty()){
         // 除了耗时上限，这里还可以加一些关于处理的 msg 数量上线
         // 应该至少还增加了一个 event
         // end_time = GetTime() + 1;
@@ -70,7 +71,7 @@ bool PollEvent(Event* event){
         }
     }
 
-    return event_list.PopHeadEvent(event);
+    return EventList.PopHeadEvent(event);
 }
 
 }

@@ -1,10 +1,23 @@
 #include "window/window.h"
 #include "event/event.h"
 
+#include<stdio.h>
+
 namespace fei_window{
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
+    WindowData* data;
+    data = (WindowData*)GetWindowLongPtrW(hwnd, GWLP_USERDATA);
+    
     switch (uMsg) {
+        case WM_NCCREATE:
+            data = (WindowData*)(((CREATESTRUCT*)lParam)->lpCreateParams);
+            if (!data){
+                MessageBoxW(NULL, L"window data NULL!", L"Error", MB_ICONERROR);
+                exit(1);
+            }
+            SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG_PTR)data);
+            return DefWindowProcW(hwnd, uMsg, wParam, lParam);;
         case WM_DESTROY:
             PostQuitMessage(0); // 退出消息循环
             return 0;
@@ -12,11 +25,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
             // windows 要求 WM_PAINT 必须用 BeginPaint 和 EndPaint
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
-            TextOutW(hdc, 50, 50, L"TEST", 30);
+            TextOutW(hdc, 50, 50, L"===== TEST =====", 16);
             EndPaint(hwnd, &ps);
             return 0;
         }
         default:
+            data = (WindowData*)GetWindowLongPtrW(hwnd, GWLP_USERDATA);
+            if(data) {
+                printf("data test: %d\n", data->test);
+            }
             Event event;
             event.common_windows_event.win_msg = uMsg;
             event.common_windows_event.wparam = wParam;
@@ -26,24 +43,24 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
     }
 }
 
-Window::Window(const wchar_t* window_name, int size_x, int size_y){
+Window::Window(const wchar_t* window_name, int size_x, int size_y): data_(){
 
     HINSTANCE hInstance = GetModuleHandleW(NULL);
-    const wchar_t class_name[] = TEXT("WindowClass");
-    WNDCLASSW wc;
+    const wchar_t class_name[] = L"WindowClass";
+    WNDCLASSW wc = {};
 
     wc.hInstance = hInstance;
     wc.lpfnWndProc = WindowProc;
     wc.lpszClassName = class_name;
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);  // 默认背景色
-    wc.hCursor = LoadCursorW(NULL, IDC_ARROW);      // 默认光标
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);      // 默认光标
 
     if (!RegisterClassW(&wc)) {
-        MessageBoxW(NULL, TEXT("register class window error"), TEXT("Error"), MB_ICONERROR);
+        MessageBoxW(NULL, L"register class window error", L"Error", MB_ICONERROR);
         exit(1);
     }
 
-    HWND hwnd_ = CreateWindowExW(
+    HWND hwnd = CreateWindowExW(
         0,                          // style
         wc.lpszClassName,
         window_name,
@@ -55,10 +72,10 @@ Window::Window(const wchar_t* window_name, int size_x, int size_y){
         NULL,                       // 没有 parent
         NULL,                       // 暂时没有 menu
         hInstance, 
-        NULL                        // user data，我们这里不用
+        &data_                        // user data，传我们的 data_
     );
 
-    if (!hwnd_) {
+    if (!hwnd) {
         MessageBoxW(NULL, L"CreateWindowExW error", L"Error", MB_ICONERROR);
         exit(1);
     }
