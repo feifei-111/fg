@@ -1,7 +1,15 @@
+extern "C"{
+#define GLAD_GL_IMPLEMENTATION
+#include <glad/gl.h>
+#undef GLAD_GL_IMPLEMENTATION
+#define GLAD_WGL_IMPLEMENTATION
+#include <glad/wgl.h> 
+#undef GLAD_WGL_IMPLEMENTATION
+}
+
 #include "window/window.h"
 #include "event/event.h"
 
-#include <glad/glad.h> 
 #include<stdio.h>
 
 namespace fei_window{
@@ -83,6 +91,10 @@ Window::Window(const wchar_t* window_name, int size_x, int size_y): data_(){
 
     // 获取窗口 hdc，记得 release
     HDC hdc = GetDC(hwnd);
+    if(!hdc){
+        printf("zzz");
+        exit(1);
+    }
 
     // 设置像素格式，并绑到 hdc
     PIXELFORMATDESCRIPTOR pfd = {
@@ -113,30 +125,79 @@ Window::Window(const wchar_t* window_name, int size_x, int size_y): data_(){
     // 创建 temp rendering context
     // wglCreateContext 这个接口只能创建 1.x 版本的
     HGLRC temp_rc = wglCreateContext(hdc);
+    if(!temp_rc){
+        MessageBoxW(NULL, L"wglCreateContext", L"Error", MB_ICONERROR);
+        exit(1);
+    }
     // 设置成当前的渲染设备
-    wglMakeCurrent(hdc, temp_rc);
+    if(!wglMakeCurrent(hdc, temp_rc)){
+        MessageBoxW(NULL, L"wglMakeCurrent temp", L"Error", MB_ICONERROR);
+        exit(1);
+    }
 
-    // 初始化 glad
-    gladLoadGL();
+    // =========================================================
+    // 现在可以加载 extension 函数
 
-    // 删除临时 rc
-    wglMakeCurrent(NULL, NULL);
-    wglDeleteContext(temp_rc);
 
-    // 下面创建现代模式的 rc，制定 opengl 版本 4.6
+    PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = 
+    (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+    if(!wglCreateContextAttribsARB){
+        MessageBoxW(NULL, L"wglGetProcAddress 111", L"Error", MB_ICONERROR);
+        exit(1);
+    }
+
+    // 创建 opengl 4.6 的 rc，注意，这个创建必须在删除 temp_rc 之前
+    // 因为 wglCreateContextAttribsARB 这个函数依赖 temp_rc 存在，如果删掉，下面的创建有问题
     const int attribs[] = {
         WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
         WGL_CONTEXT_MINOR_VERSION_ARB, 6,
-        WGL_CONTEXT_PROFILE_MASK_ARB, 
-        WGL_CONTEXT_CORE_PROFILE_BIT_ARB, // 核心模式
+        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
         0
     };
-    // 这个函数要 glad load 才能用
     HGLRC morden_render_ctx = wglCreateContextAttribsARB(hdc, 0, attribs);
-    wglMakeCurrent(hdc, morden_render_ctx);
+    if(!morden_render_ctx){
+        MessageBoxW(NULL, L"wglCreateContextAttribsARB 222", L"Error", MB_ICONERROR);
+        exit(1);
+    }
+    // =========================================================
+
+
+    // 删除临时 rc
+    if(!wglMakeCurrent(NULL, NULL)){
+        MessageBoxW(NULL, L"wwwglad init error", L"Error", MB_ICONERROR);
+        exit(1);
+    }
+    wglDeleteContext(temp_rc);
+
+    if(!wglMakeCurrent(hdc, morden_render_ctx)){
+        MessageBoxW(NULL, L"333", L"Error", MB_ICONERROR);
+        exit(1);
+    }
+
+    // 初始化 glad 和 wglad，要求当前的上下文是 4.6 的，前面不能正确 load
+    if (!gladLoaderLoadWGL(hdc)){
+        MessageBoxW(NULL, L"wwwglad init error", L"Error", MB_ICONERROR);
+        exit(1);
+    }
+    if (!gladLoaderLoadGL()){
+        MessageBoxW(NULL, L"glad init error", L"Error", MB_ICONERROR);
+        exit(1);
+    }
+
+    // 打印信息
+    if (!glGetString){
+        MessageBoxW(NULL, L"can not get glGetString", L"Error", MB_ICONERROR);
+        exit(1);
+    }
+    const char* version = (const char*)glGetString(GL_VERSION);
+    const char* renderer = (const char*)glGetString(GL_RENDERER);
+    printf("Minimum OpenGL support:\nVersion: %s\nRenderer: %s\n", version, renderer);
+
+
 
     glViewport(0, 0, size_x, size_y);
     glClearColor(1.0, 0.0, 0.0, 1.0);
+
 
     ShowWindow(hwnd, SW_SHOW);
     UpdateWindow(hwnd);         // 这个接口是让 WM_PAINT 消息提高优先级

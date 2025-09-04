@@ -1,1 +1,1 @@
-cl.exe  /DUNICODE /D_UNICODE .\test.cc .\src\window\window.cc .\src\event\event.cc  /I".\src"  /link /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup user32.lib gdi32.lib ole32.lib shell32.lib  /out:a.exe 
+cl.exe  /DUNICODE /D_UNICODE .\test.cc .\src\window\window.cc .\src\event\event.cc /I".\src" /I".\glad\include"   /link /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup user32.lib gdi32.lib ole32.lib shell32.lib opengl32.lib /out:a.exe 
