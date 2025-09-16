@@ -17,6 +17,10 @@ namespace fei_window{
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
     WindowData* data;
     data = (WindowData*)GetWindowLongPtrW(hwnd, GWLP_USERDATA);
+    if (data->window->hwnd_ != hwnd){
+        MessageBoxW(NULL, L"hwnd not correct!", L"Error", MB_ICONERROR);
+        exit(1);
+    }
     
     switch (uMsg) {
         case WM_NCCREATE:
@@ -28,13 +32,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
             SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG_PTR)data);
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);;
         case WM_DESTROY:
+            // 增加 event，退出外层循环
+            ReleaseDC(hwnd, data->window->hdc_);
             PostQuitMessage(0); // 退出消息循环
             return 0;
         case WM_PAINT: {
             // windows 要求 WM_PAINT 必须用 BeginPaint 和 EndPaint
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
-            TextOutW(hdc, 50, 50, L"===== TEST =====", 16);
             EndPaint(hwnd, &ps);
             return 0;
         }
@@ -89,12 +94,16 @@ Window::Window(const wchar_t* window_name, int size_x, int size_y): data_(){
         exit(1);
     }
 
+    hwnd_ = hwnd;
+
     // 获取窗口 hdc，记得 release
     HDC hdc = GetDC(hwnd);
     if(!hdc){
         printf("zzz");
         exit(1);
     }
+
+    hdc_ = hdc;
 
     // 设置像素格式，并绑到 hdc
     PIXELFORMATDESCRIPTOR pfd = {
@@ -193,16 +202,22 @@ Window::Window(const wchar_t* window_name, int size_x, int size_y): data_(){
     const char* renderer = (const char*)glGetString(GL_RENDERER);
     printf("Minimum OpenGL support:\nVersion: %s\nRenderer: %s\n", version, renderer);
 
-
-
     glViewport(0, 0, size_x, size_y);
     glClearColor(1.0, 0.0, 0.0, 1.0);
 
-
+    data_.window = this;
     ShowWindow(hwnd, SW_SHOW);
     UpdateWindow(hwnd);         // 这个接口是让 WM_PAINT 消息提高优先级
 }
 
-Window::~Window(){}
+Window::~Window(){
+    if(hwnd_){
+        DestroyWindow(hwnd_);
+    }
+}
+
+void Window::SwapBuffer(){
+    SwapBuffers(hdc_);
+}
 
 }
