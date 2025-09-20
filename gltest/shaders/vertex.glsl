@@ -8,7 +8,6 @@ uniform vec3 offset;
 
 void main()
 {
-   vec3 new_pos = vec3(Pos.x, -Pos.y, Pos.z);
-   gl_Position = vec4(new_pos + offset, 1.0);
+   gl_Position = vec4(Pos + offset, 1.0);
    TexCoord = tex;
 }
