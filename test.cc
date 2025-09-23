@@ -4,132 +4,148 @@
 #include "debug.h"
 #include "Windows.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 extern "C" {
 #include "glad/gl.h"
 }
 
 #include<stdio.h>
 
-// vertex shader
-const char *vertexShaderSource = 
-"#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-
-// fragment shader
-const char *fragmentShaderSource = 
-"#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\n\0";
-
 int main(){
 
     CreateDebugConsole();
     printf("start\n");
-    auto window = fei_window::Window(L"Game", 1280, 720);
 
-    int success;
-    char infoLog[512];
+    auto window = fg_window::Window(L"Game", 1280, 720);
 
-    // compile vertex shader
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        printf("%s\n", infoLog);
-        exit(1);
-    }
-
-    // compile fragment shader
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        printf("%s\n", infoLog);
-        exit(1);
-    }
-
-    // create program
-    unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        printf("%s\n", infoLog);
-        exit(1);
-    }
-
-    // link 到 program 之后就没用了
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    // 打印一个简单的三角形
-    // 创建 vertex 以及 buffer
+    // ------------------------------------------------------------------
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f, // left  
-         0.5f, -0.5f, 0.0f, // right 
-         0.0f,  0.5f, 0.0f  // top   
-    }; 
-
-    unsigned int VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // 记录 VAO
-    unsigned int VAO
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // 注意，VAO 记录了 VBO，所以使用 VAO 会自动使用记录的 VBO，VBO 可以直接解绑
-    glBindBuffer(GL_ARRAY_BUFFER, 0); 
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
     
-    // VAO 暂时解绑，需要时再用
-    glBindVertexArray(0); 
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+    };
+    unsigned int indices[] = {
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
+    };
+
+    fg_gl::VAO vao;
+
+    fg_gl::VBO<float> vbo(vertices, 5, 36, GL_FLOAT, GL_STATIC_DRAW, 0);
+    vbo.SetAttr(3, GL_FALSE);
+    vbo.SetAttr(2, GL_FALSE);
+    // fg_gl::EBO ebo(indices, sizeof(indices), GL_STATIC_DRAW);
+
+    // end record
+    vao.UnBind();
+    vbo.UnBind();
+    // ebo.UnBind();
 
 
-    // 设置 clear 时的默认背景色
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    fg_gl::ShaderProgram program = fg_gl::ShaderProgram(
+        "assets/shaders/vertex.glsl", "assets/shaders/fragment.glsl");
 
-    fei_window::Event event;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+    fg_gl::Texture2D tex0("assets/textures/awesomeface.png", 0, GL_RGB, GL_RGBA);
+    fg_gl::Texture2D tex1("assets/textures/wall.jpg", 3, GL_RGB, GL_RGB);
+
+    glEnable(GL_DEPTH_TEST);  
+
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f,  0.0f,  0.0f), 
+        glm::vec3( 2.0f,  5.0f, -15.0f), 
+        glm::vec3(-1.5f, -2.2f, -2.5f),  
+        glm::vec3(-3.8f, -2.0f, -12.3f),  
+        glm::vec3( 2.4f, -0.4f, -3.5f),  
+        glm::vec3(-1.7f,  3.0f, -7.5f),  
+        glm::vec3( 1.3f, -2.0f, -2.5f),  
+        glm::vec3( 1.5f,  2.0f, -2.5f), 
+        glm::vec3( 1.5f,  0.2f, -1.5f), 
+        glm::vec3(-1.3f,  1.0f, -1.5f)  
+    };
+
+    fg_window::Event event;
+
+    float timeValue = 0;
     while(true){
-        while(fei_window::PollEvent(&event)){
+        while(fg_window::PollEvent(&event)){
             printf("main: %x, %x, %x\n",event.common_windows_event.win_msg, event.common_windows_event.lparam, event.common_windows_event.wparam);
-            // 按左键
-            // if (event.common_windows_event.win_msg == WM_LBUTTONDOWN){
 
-            // }
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            timeValue += 100;
+            const float radius = 10.0f;
+            float camX = sin(timeValue) * radius;
+            float camZ = cos(timeValue) * radius;
+    
+            vao.Bind();
+            program.Use();
+    
+            program.UniformInt("Tex0", tex0.CurrentUnit());
+            program.UniformInt("Tex1", tex1.CurrentUnit());
+    
             
-            // 进行绘制，设置 program，VAO 包含了 VBO，所以 bind VAO 足够了
-            glUseProgram(shaderProgram);
-            glBindVertexArray(VAO);
-            // 绘制 VBO 中的前三个 vertex 构成的三角形
-            glDrawArrays(GL_TRIANGLES, 0, 3);
+            glm::mat4 view;
+            glm::mat4 projection;
+            view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));  
+            projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    
+            for (int i=0; i<10; i++){
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, cubePositions[i]);
+                model = glm::rotate(model, timeValue * (i+1), glm::vec3(0.5f, 1.0f, 0.0f));
+                glm::mat4 trans = projection * view * model;
+                program.UniformFloatMat4Vec("trans", glm::value_ptr(trans));
+                // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+            }    
 
             window.SwapBuffer();
         }
     }
-
-    // 清理数据
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteProgram(shaderProgram);
 }

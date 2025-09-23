@@ -34,13 +34,14 @@ struct ShaderProgram{
     void UniformInt(const std::string &name, int value) const;
     void UniformFloat(const std::string &name, float value) const;
     void UniformFloat3(const std::string &name, float a, float b, float c);
+    void UniformFloatMat4Vec(const std::string &name, float* data, size_t mat_num=1, unsigned int transpose=GL_FALSE);
 
 private:
     unsigned int program_;
 };
 
 struct Texture2D {
-    Texture2D(const char* path, unsigned int tex_unit, unsigned int org_fmt, unsigned int target_fmt);
+    Texture2D(const char* path, unsigned int tex_unit, unsigned int org_fmt, unsigned int target_fmt, bool flip_load=true);
     void BindUnit(unsigned int tex_unit);
     unsigned int CurrentUnit() const;
 private:
@@ -75,11 +76,11 @@ struct VBO{
         attr_idx_++;
         column_idx_ += column_size;
     }
-    void Bind(){
+    void Bind() const {
         glBindBuffer(GL_ARRAY_BUFFER, vbo_);
     }
 
-    void UnBind(){
+    void UnBind() const {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
     ~VBO(){
@@ -97,38 +98,19 @@ private:
 };
 
 struct EBO{
-    EBO(unsigned int* data, unsigned int data_size, unsigned int draw_type){
-        glGenBuffers(1, &ebo_);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, data_size, data, draw_type);
-    }
-    void Bind(){
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
-    }
-    void UnBind(){
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-    ~EBO(){
-        glDeleteBuffers(1, &ebo_);
-    }
+    EBO(unsigned int* data, unsigned int data_size, unsigned int draw_type);
+    void Bind() const;
+    void UnBind() const;
+    ~EBO();
 private:
     unsigned int ebo_;
 };
 
 struct VAO{
-    VAO(){
-        glGenVertexArrays(1, &vao_);
-        glBindVertexArray(vao_);
-    }
-    void Bind(){
-        glBindVertexArray(vao_);
-    }
-    void UnBind(){
-        glBindVertexArray(0);
-    }
-    ~VAO(){
-        glDeleteVertexArrays(1, &vao_);
-    }
+    VAO();
+    void Bind() const;
+    void UnBind() const;
+    ~VAO();
 private:
     unsigned int vao_;
 };
