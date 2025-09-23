@@ -10,8 +10,16 @@ extern "C"{
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #undef GLAD_GL_IMPLEMENTATION
+
+#ifdef _WIN32
+#define GLAD_WGL_IMPLEMENTATION
+#include <glad/wgl.h> 
+#undef GLAD_WGL_IMPLEMENTATION
+#endif
 }
 #include "fg_gl/gl.h"
+
+#include <iostream>
 
 
 namespace fg_gl{
@@ -50,11 +58,13 @@ bool GLInit(HWND hwnd, HDC hdc){
     // wglCreateContext 这个接口只能创建 1.x 版本的 rc
     HGLRC temp_rc = wglCreateContext(hdc);
     if(!temp_rc){
+        std::cout << "temp_rc" << std::endl;
         return false;
     }
 
     // 设置成当前的渲染设备
     if(!wglMakeCurrent(hdc, temp_rc)){
+        std::cout << "wglMakeCurrent" << std::endl;
         return false;
     }
 
@@ -62,6 +72,7 @@ bool GLInit(HWND hwnd, HDC hdc){
     PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = 
     (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
     if(!wglCreateContextAttribsARB){
+        std::cout << "wglGetProcAddress wglCreateContextAttribsARB" << std::endl;
         return false;
     }
 
@@ -76,6 +87,7 @@ bool GLInit(HWND hwnd, HDC hdc){
 
     HGLRC morden_render_ctx = wglCreateContextAttribsARB(hdc, 0, attribs);
     if(!morden_render_ctx){
+        std::cout << "morden_render_ctx" << std::endl;
         return false;
     }
 
@@ -83,11 +95,15 @@ bool GLInit(HWND hwnd, HDC hdc){
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(temp_rc);
 
+    wglMakeCurrent(hdc, morden_render_ctx);
+
     // 初始化 glad，现在要求 rc 是 3.3+
     if (!gladLoaderLoadWGL(hdc)){
+        std::cout << "gladLoaderLoadWGL" << std::endl;
         return false;
     }
     if (!gladLoaderLoadGL()){
+        std::cout << "gladLoaderLoadGL" << std::endl;
         return false;
     }
 
@@ -101,13 +117,9 @@ bool GLInit(HWND hwnd, HDC hdc){
     printf("Minimum OpenGL support:\nVersion: %s\nRenderer: %s\n", version, renderer);
 
     // opengl 的一些基础设置，先设置一下
-    glClearColor(1.0, 0.0, 0.0, 1.0);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
 
-    // 纹理基础配置
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    return true;
 }
 #endif
 

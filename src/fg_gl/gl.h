@@ -4,9 +4,7 @@ extern "C"{
 #include <glad/gl.h>
 
 #ifdef _WIN32
-#define GLAD_WGL_IMPLEMENTATION
 #include <glad/wgl.h> 
-#undef GLAD_WGL_IMPLEMENTATION
 #endif
 }
 
@@ -70,7 +68,7 @@ struct VBO{
         glBufferData(GL_ARRAY_BUFFER, data_size, data, draw_type);
     }
 
-    void SetAttr(int column_size, unsigned int norm){
+    void SetAttr(int column_size, unsigned int norm=GL_FALSE){
         glVertexAttribPointer(attr_idx_, column_size, gl_dtype_, norm, stride_, (void*)column_idx_);
         glEnableVertexAttribArray(attr_idx_);
         attr_idx_++;

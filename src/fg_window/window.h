@@ -23,6 +23,8 @@ class Window{
     
 public:
     Window(const wchar_t* window_name, int x, int y);
+    HDC GetHDC() const;
+    HWND GetHWND() const;
     void SwapBuffer() const;
     ~Window();
 };

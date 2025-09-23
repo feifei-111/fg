@@ -3,45 +3,56 @@
 #include "fg_event/event.h"
 #include "fg_gl/gl.h"
 
-#include<stdio.h>
+#include <iostream>
 
 namespace fg_window{
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
+
+    // std::cout << uMsg << ", " << wParam << ", " <<  lParam << std::endl;
+
     WindowData* data;
     data = (WindowData*)GetWindowLongPtrW(hwnd, GWLP_USERDATA);
 
-    if (data->window->hwnd_ != hwnd){
+    if (data && data->window && data->window->GetHWND() != hwnd){
         MessageBoxW(NULL, L"hwnd not correct!", L"Error", MB_ICONERROR);
-        exit(1);
     }
     
     switch (uMsg) {
         case WM_NCCREATE:
+
             data = (WindowData*)(((CREATESTRUCT*)lParam)->lpCreateParams);
             if (!data){
-                MessageBoxW(NULL, L"window data NULL!", L"Error", MB_ICONERROR);
+                MessageBoxW(NULL, L"window data init error!", L"Error", MB_ICONERROR);
                 exit(1);
             }
             SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG_PTR)data);
-            return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+            std::cout << "WM_NCCREATE default ret: " << DefWindowProcW(hwnd, uMsg, wParam, lParam) << std::endl;
+            // while(1){}
+            return 1;
         case WM_DESTROY:
             // 增加 event，退出外层循环
-            ReleaseDC(hwnd, data->window->hdc_);
+            if (!data || !data->window){
+                MessageBoxW(NULL, L"window data init error!", L"Error", MB_ICONERROR);
+                exit(1);
+            }
+            ReleaseDC(hwnd, data->window->GetHDC());
             PostQuitMessage(0); // 退出消息循环
             return 0;
         case WM_PAINT: {
             // 需要重置 Viewport
             // 我们不考虑局部重绘，直接调 GetWindowRect
+
             RECT window_rect;
             GetWindowRect(hwnd, &window_rect);
-            int width = window_rect.rigth -  window_rect.left;
+            int width = window_rect.right -  window_rect.left;
             int height = window_rect.bottom - window_rect.top;
             glViewport(0, 0, width, height);
 
-            // 在 WM_NCCREATE 初始化了，所以这里不写 if 了吧
-            data->height = height;
-            data->width = width;
+            if (data){
+                data->height = height;
+                data->width = width;
+            }
 
             // windows 要求 WM_PAINT 必须用 BeginPaint 和 EndPaint 局部重绘
             // 如果要用，写这里备忘
@@ -51,10 +62,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
             return 0;
         }
         default:
-            Event event;
-            event.common_windows_event.win_msg = uMsg;
-            event.common_windows_event.wparam = wParam;
-            event.common_windows_event.lparam = lParam;
+            fg_event::Event event;
+            event.data.common_windows_event.win_msg = uMsg;
+            event.data.common_windows_event.wparam = wParam;
+            event.data.common_windows_event.lparam = lParam;
             PushEvent(&event);
             return DefWindowProcW(hwnd, uMsg, wParam, lParam); // 默认消息处理
     }
@@ -77,8 +88,8 @@ Window::Window(const wchar_t* window_name, int width, int height): data_(){
         exit(1);
     }
 
-    data_.width = width;
-    data_.height = height;
+    // data_.width = width;
+    // data_.height = height;
 
     HWND hwnd = CreateWindowExW(
         0,                          // style
@@ -100,13 +111,20 @@ Window::Window(const wchar_t* window_name, int width, int height): data_(){
     HDC hdc = GetDC(hwnd);
     hdc_ = hdc;
 
-    if (!GLInit(hwnd, hdc)){
+    if (!fg_gl::GLInit(hwnd, hdc)){
         MessageBoxW(NULL, L"GLinit error", L"Error", MB_ICONERROR);
     }
 
     data_.window = this;
     ShowWindow(hwnd, SW_SHOW);
     UpdateWindow(hwnd);         // 这个接口是让 WM_PAINT 消息提高优先级
+}
+
+HDC Window::GetHDC() const{
+    return hdc_;
+}
+HWND Window::GetHWND() const{
+    return hwnd_;
 }
 
 Window::~Window(){

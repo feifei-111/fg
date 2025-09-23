@@ -2,7 +2,7 @@
 #include<Windows.h>
 #endif
 
-#include<stdio.h>
+#include<iostream>
 #include"fg_event/event.h"
 
 
@@ -10,7 +10,7 @@
 namespace fg_event{
 
 struct EventListClass{
-    static constexpr unsigned int capacity_ = 512;
+    static constexpr unsigned int capacity_ = 256;
 
     Event events_[capacity_];
     unsigned int head_ = 0;
@@ -63,7 +63,7 @@ bool PollEvent(Event* event){
         // end_time = GetTime() + 1;
         MSG msg;
 
-        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) && EventList.Count() < 32) {
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
 
@@ -71,6 +71,9 @@ bool PollEvent(Event* event){
             //    break;
             //}
         }
+
+        std::cout << "end dispatch" << std::endl;
+        
     }
 
     return EventList.PopHeadEvent(event);
