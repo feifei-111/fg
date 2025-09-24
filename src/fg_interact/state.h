@@ -4,7 +4,7 @@ namespace fg_interact{
 
 // 记录常规状态，主要是按键按下状态，鼠标位置等
 struct MouseState {
-    float timestamp=-1;
+    float time_stamp;
 
     bool mouse_lbutton;
     bool mouse_rbutton;

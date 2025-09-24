@@ -8,7 +8,7 @@
 
 namespace fei_window {
 
-static void RecordMouseMove(WPARAM wParam, LPARAM lParam, fg_interact::MouseState* state, bool need_time);
+static void RecordMouseMove(WPARAM wParam, LPARAM lParam, fg_interact::MouseState* state, bool need_time=false);
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
 
@@ -139,7 +139,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
 
 void RecordMouseState(WPARAM wParam, LPARAM lParam, fg_interact::MouseState* mouse_state, bool need_time){
     if (need_time){
-        mouse_state->timestamp = fg_utils::GetTime();
+        mouse_state->time_stamp = fg_utils::GetTime();
     }
     mouse_state->mouse_lbutton = wParam & MK_LBUTTON;
     mouse_state->mouse_rbutton = wParam & MK_RBUTTON;
