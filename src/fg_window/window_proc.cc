@@ -8,7 +8,7 @@
 
 namespace fei_window {
 
-static void RecordMouseMove(WPARAM wParam, LPARAM lParam, WindowState* state);
+static void RecordMouseMove(WPARAM wParam, LPARAM lParam, fg_interact::MouseState* state, bool need_time);
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
 
@@ -46,6 +46,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
             event.type = fg_interact::EventType::kExitEvent;
             PushEvent(&event);
             return 0;
+
         case WM_PAINT:
             // 不考虑局部重绘，GetWindowRect 获取整个 window size
             RECT window_rect;
@@ -59,18 +60,71 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
             event.type = fg_interact::EventType::kPaintEvent;
             PushEvent(&event);
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+
         case WM_MOUSEMOVE:
-            data->state.mouse_ts = fg_utils::GetTime();
-            data->state.mouse_lbutton = wParam & MK_LBUTTON;
-            data->state.mouse_rbutton = wParam & MK_RBUTTON;
-            data->state.mouse_mbutton = wParam & MK_MBUTTON;
-            data->state.mouse_shift = wParam & MK_SHIFT;
-            data->state.mouse_ctrl = wParam & MK_CONTROL;
-            data->state.mouse_xbutton1 = wParam & MK_XBUTTON1;
-            data->state.mouse_xbutton2 = wParam & MK_XBUTTON2;
-            data->state.mouse_x = LOWORD(lParam);
-            data->state.mouse_y = HIWORD(lParam);
+            RecordMouseState(wParam, lParam, &(data->state.mouse_state), true);
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+
+        case WM_LBUTTONDOWN: 
+            fg_interact::Event event;
+            event.type = fg_interact::EventType::kMouseEvent;
+            event.data.mouse_event.button = fg_interact::MouseEvent::Button::LButton;
+            event.data.mouse_event.move = fg_interact::MouseEvent::Move::Down;
+            RecordMouseState(wParam, lParam, &(event.data.mouse_event.mouse_state), false);
+            PushEvent(&event);
+            SetCapture(hwnd);
+            return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+
+        case WM_LBUTTONUP:
+            fg_interact::Event event;
+            event.type = fg_interact::EventType::kMouseEvent;
+            event.data.mouse_event.button = fg_interact::MouseEvent::Button::LButton;
+            event.data.mouse_event.move = fg_interact::MouseEvent::Move::Up;
+            RecordMouseState(wParam, lParam, &(event.data.mouse_event.mouse_state), false);
+            PushEvent(&event);
+            ReleaseCapture();
+            return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+
+        case WM_RBUTTONDOWN:
+            fg_interact::Event event;
+            event.type = fg_interact::EventType::kMouseEvent;
+            event.data.mouse_event.button = fg_interact::MouseEvent::Button::RButton;
+            event.data.mouse_event.move = fg_interact::MouseEvent::Move::Down;
+            RecordMouseState(wParam, lParam, &(event.data.mouse_event.mouse_state), false);
+            PushEvent(&event);
+            return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+
+        case WM_RBUTTONUP:
+            fg_interact::Event event;
+            event.type = fg_interact::EventType::kMouseEvent;
+            event.data.mouse_event.button = fg_interact::MouseEvent::Button::RButton;
+            event.data.mouse_event.move = fg_interact::MouseEvent::Move::Up;
+            RecordMouseState(wParam, lParam, &(event.data.mouse_event.mouse_state), false);
+            PushEvent(&event);
+            return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+
+        case WM_MBUTTONDOWN:
+            fg_interact::Event event;
+            event.type = fg_interact::EventType::kMouseEvent;
+            event.data.mouse_event.button = fg_interact::MouseEvent::Button::MButton;
+            event.data.mouse_event.move = fg_interact::MouseEvent::Move::Down;
+            RecordMouseState(wParam, lParam, &(event.data.mouse_event.mouse_state), false);
+            PushEvent(&event);
+            return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+
+        case WM_MBUTTONUP:
+            fg_interact::Event event;
+            event.type = fg_interact::EventType::kMouseEvent;
+            event.data.mouse_event.button = fg_interact::MouseEvent::Button::MButton;
+            event.data.mouse_event.move = fg_interact::MouseEvent::Move::Up;
+            RecordMouseState(wParam, lParam, &(event.data.mouse_event.mouse_state), false);
+            PushEvent(&event);
+            return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+
+        case WM_MOUSEWHEEL: 
+            // TODO
+            return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+
         default:
             fg_interact::Event event;
             event.type = fg_interact::EventType::kCommonEvent;
@@ -83,9 +137,19 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
 }
 
 
-void RecordMouseMove(WPARAM wParam, LPARAM lParam, WindowState* state){
-    
-    state->
+void RecordMouseState(WPARAM wParam, LPARAM lParam, fg_interact::MouseState* mouse_state, bool need_time){
+    if (need_time){
+        mouse_state->timestamp = fg_utils::GetTime();
+    }
+    mouse_state->mouse_lbutton = wParam & MK_LBUTTON;
+    mouse_state->mouse_rbutton = wParam & MK_RBUTTON;
+    mouse_state->mouse_mbutton = wParam & MK_MBUTTON;
+    mouse_state->mouse_shift = wParam & MK_SHIFT;
+    mouse_state->mouse_ctrl = wParam & MK_CONTROL;
+    mouse_state->mouse_xbutton1 = wParam & MK_XBUTTON1;
+    mouse_state->mouse_xbutton2 = wParam & MK_XBUTTON2;
+    mouse_state->mouse_x = LOWORD(lParam);
+    mouse_state->mouse_y = HIWORD(lParam);
 }
 
 
