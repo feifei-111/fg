@@ -2,10 +2,6 @@
 #include "stb_image.h"
 #undef STB_IMAGE_IMPLEMENTATION
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-
 extern "C"{
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
@@ -17,9 +13,12 @@ extern "C"{
 #undef GLAD_WGL_IMPLEMENTATION
 #endif
 }
+
 #include "fg_gl/gl.h"
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 
 namespace fg_gl{

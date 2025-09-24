@@ -1,2 +1,0 @@
-cl.exe  /DUNICODE /D_UNICODE .\test.cc .\src\fg_window\window.cc .\src\fg_event\event.cc .\src\fg_gl\gl.cc /I".\src" /I".\src\third_party"   /link /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup user32.lib gdi32.lib ole32.lib shell32.lib opengl32.lib /out:a.exe 
-del *.obj

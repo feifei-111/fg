@@ -3,11 +3,11 @@
 #endif
 
 #include<iostream>
-#include"fg_event/event.h"
+#include"fg_interact/event.h"
 
 
 
-namespace fg_event{
+namespace fg_interact{
 
 struct EventListClass{
     static constexpr unsigned int capacity_ = 256;

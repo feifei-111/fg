@@ -1,7 +1,10 @@
+#pragma once
 #include <Windows.h>
 #include <cstdio>
 #include <io.h>
 #include <fcntl.h>
+
+namespace fg_utils{
 
 void CreateDebugConsole()
 {
@@ -30,4 +33,6 @@ void CreateDebugConsole()
     setvbuf(stdin, NULL, _IONBF, 0);
 
     SetConsoleTitle(L"FEI_console");
+}
+
 }

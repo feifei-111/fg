@@ -13,7 +13,7 @@ extern "C"{
 #endif
 
 #include <string>
-#include<iostream>
+#include <iostream>
 
 namespace fg_gl{
 
