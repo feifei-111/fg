@@ -8,7 +8,7 @@
 
 namespace fei_window {
 
-static void RecordMouseMove(WPARAM wParam, LPARAM lParam, fg_interact::MouseState* state, bool need_time=false);
+static inline void RecordMouseMove(WPARAM wParam, LPARAM lParam, fg_interact::MouseState* state, bool need_time=false);
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
 
@@ -122,8 +122,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_MOUSEWHEEL: 
-            // TODO
+            fg_interact::Event event;
+            event.type = fg_interact::EventType::kMouseWheelEvent;
+            event.data.mouse_wheel_event.wheel_delta = GET_WHEEL_DELTA_WPARAM(wParam);
+            RecordMouseState(wParam, lParam, &(event.data.mouse_event.mouse_state), false);
+            PushEvent(&event);
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+
+        case WM_KEYDOWN
+
 
         default:
             fg_interact::Event event;
@@ -148,8 +155,8 @@ void RecordMouseState(WPARAM wParam, LPARAM lParam, fg_interact::MouseState* mou
     mouse_state->mouse_ctrl = wParam & MK_CONTROL;
     mouse_state->mouse_xbutton1 = wParam & MK_XBUTTON1;
     mouse_state->mouse_xbutton2 = wParam & MK_XBUTTON2;
-    mouse_state->mouse_x = LOWORD(lParam);
-    mouse_state->mouse_y = HIWORD(lParam);
+    mouse_state->mouse_x = GET_X_LPARAM(lParam);
+    mouse_state->mouse_y = GET_Y_LPARAM(lParam);
 }
 
 

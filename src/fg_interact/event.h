@@ -13,7 +13,7 @@ enum EventType{
     kPaintEvent,
     kMouseEvent,
     kKeyboardEvent,
-    kScrollEvent
+    kMouseWheelEvent
 };
 
 struct CommonEvent{
@@ -43,8 +43,9 @@ struct KeyBoardEvent{
 
 };
 
-struct ScrollEvent{
-
+struct MouseWheelEvent{
+    int wheel_delta;
+    MouseState mouse_state;
 };
 
 union Event{
@@ -57,7 +58,7 @@ union Event{
         CommonEvent common_event;
         MouseEvent mouse_event;
         KeyBoardEvent keyboard_event;
-        ScrollEvent scroll_event;
+        MouseWheelEvent mouse_wheel_event;
     } data;
 };
 
