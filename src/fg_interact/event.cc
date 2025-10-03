@@ -37,7 +37,7 @@ struct EventList{
 
     // SDL 里面的 event 也是拷贝的，反正先写了再说
     bool PushEvent(Event* event){
-        std::cout << "when push: " << event->type  << ", " << event->window_id << ", " <<event->time_stamp << std::endl;
+        // std::cout << "when push: " << event->type  << ", " << event->window_id << ", " <<event->time_stamp << std::endl;
         if (count_ == Capacity){
             return false;
         }

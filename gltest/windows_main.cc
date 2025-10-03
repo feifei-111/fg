@@ -17,8 +17,11 @@ int main(){
             std::cout << "Main Loop Get Event: "
                     << event.type << std::endl;
         }
-        glClear(GL_COLOR_BUFFER_BIT);
+        float time = fg_utils::GetTime();
+        // glClearColor(0.0, sin(time), 0.0, 1.0);
+        // glClear(GL_COLOR_BUFFER_BIT);
         render.Draw();
         window.SwapBuffer();
+
     }
 }

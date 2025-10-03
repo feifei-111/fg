@@ -114,6 +114,7 @@ void Render::Draw(){
         glm::mat4 trans = projection * view * model;
         program.UniformFloatMat4Vec("trans", glm::value_ptr(trans));
         // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        std::cout << "glDrawArrays" << std::endl;
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
 
