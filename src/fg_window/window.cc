@@ -17,6 +17,7 @@ Window::Window(const wchar_t* window_name, int width, int height): data_(){
     wc.lpszClassName = class_name;
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);  // 默认背景色
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);      // 默认光标
+    wc.stype = CS_DBLCLKS;
 
     if (!RegisterClassW(&wc)) {
         MessageBoxW(NULL, L"register class window error", L"Error", MB_ICONERROR);

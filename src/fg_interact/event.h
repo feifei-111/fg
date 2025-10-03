@@ -1,6 +1,6 @@
 #pragma once
-#include <fg_interact/state.h>
-#include <fg_utils/time.h>
+#include "fg_interact/state.h"
+#include "fg_utils/utils.h"
 
 namespace fg_interact{
 
@@ -11,9 +11,10 @@ enum EventType{
     kCommonEvent,
     kExitEvent,
     kPaintEvent,
-    kMouseEvent,
-    kKeyboardEvent,
-    kMouseWheelEvent
+    kMouseMoveEvent,
+    kMouseClickEvent,
+    kMouseWheelEvent,
+    kKeyboardEvent
 };
 
 struct CommonEvent{
@@ -22,43 +23,46 @@ struct CommonEvent{
     long long lparam;
 };
 
-struct MouseEvent{
-    enum Button{
-        RButton,
-        LButton,
-        MButton,
-        X1Button,
-        X2Button
-    };
-    enum Move{
-        Down,
-        Up
-    };
-    Button button;
-    Move move;
-    MouseState mouse_state;
+struct MouseMoveEvent{
+    int x;
+    int y;
 };
 
-struct KeyBoardEvent{
-
+struct MouseClickEvent{
+    Button button;
+    ButtonMove move;
+    int x;
+    int y;
 };
 
 struct MouseWheelEvent{
     int wheel_delta;
-    MouseState mouse_state;
+    int x;
+    int y;
+};
+
+struct KeyBoardEvent{
+    Button button;
+    ButtonMove move;
 };
 
 union Event{
     Event(){
         time_stamp = fg_utils::GetTime();
     }
+    Event(const Event& other_event){
+        type = other_event.type;
+        time_stamp = other_event.time_stamp;
+        data = other_event.data;
+    }
     EventType type;
     float time_stamp;
     union {
         CommonEvent common_event;
-        MouseEvent mouse_event;
-        KeyBoardEvent keyboard_event;
+        MouseMoveEvent mouse_move_event;
+        MouseClickEvent mouse_click_event;
         MouseWheelEvent mouse_wheel_event;
+        KeyBoardEvent keyboard_event;
     } data;
 };
 

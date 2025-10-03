@@ -2,55 +2,161 @@
 
 namespace fg_interact{
 
-enum KeyBoardButton {
-    
-}
+enum Button {
+    // mouse part
+    MS_LBUTTON,
+    MS_RBUTTON,
+    MS_MBUTTON,
+    MS_XBUTTON1,
+    MS_XBUTTON2,
+
+    // keyboard part
+    F1, 
+    F2, 
+    F3, 
+    F4, 
+    F5, 
+    F6, 
+    F7, 
+    F8,
+    F9,
+    F10,
+    F11,
+    F12,
+
+    // numbers
+    NUM_0,
+    NUM_1,
+    NUM_2,
+    NUM_3,
+    NUM_4,
+    NUM_5,
+    NUM_6,
+    NUM_7,
+    NUM_8,
+    NUM_9,
+
+    // alphabets
+    LETTER_A,
+    LETTER_B,
+    LETTER_C,
+    LETTER_D,
+    LETTER_E,
+    LETTER_F,
+    LETTER_G,
+    LETTER_H,
+    LETTER_I,
+    LETTER_J,
+    LETTER_K,
+    LETTER_L,
+    LETTER_M,
+    LETTER_N,
+    LETTER_O,
+    LETTER_P,
+    LETTER_Q,
+    LETTER_R,
+    LETTER_S,
+    LETTER_T,
+    LETTER_U,
+    LETTER_V,
+    LETTER_W,
+    LETTER_X,
+    LETTER_Y,
+    LETTER_Z,
+
+    // 控制
+    BACK,
+    RETURN,
+    ESC,
+
+    // 符号 button
+    BACK_QUOTE,          // 反引号，esc 下面的
+    MINUS,              // 减号
+    EQUAL,              // 等号
+
+    TAB,
+    L_SQUARE_BRACKET,   // 左右方括号
+    R_SQUARE_BRACKET,
+    BACKSLASH,          // 反斜杠
+
+    SEMICOLON,          // 分号
+    QUOTE,              // 单引号
+
+    COMMA,              // 逗号
+    PERIOD,             // 句号
+    SLASH,              // 斜杠，除法
+
+    SPACE,
+
+    // 组合键
+    CAPITAL,
+    LSHIFT,
+    RSHIFT,
+    LCONTROL,
+    RCONTROL,
+    LMENU,  // alt
+    RMENU,
+    LWIN,
+    RWIN,
+
+    // 方向键
+    LEFT,
+    UP,
+    RIGHT,
+    DOWN,
+
+    // 功能键
+    HOME,
+    END,
+    PRIOR,
+    NEXT,
+    INSERT,
+    DELETE,
+    SCREEN_SHOT,
+    SCROLL,     // 基本被淘汰的功能
+    PAUSE,
+
+    // 小键盘的数字以及运算符
+    NUMLOCK,
+    NUMPAD_0,
+    NUMPAD_1,
+    NUMPAD_2,
+    NUMPAD_3,
+    NUMPAD_4,
+    NUMPAD_5,
+    NUMPAD_6,
+    NUMPAD_7,
+    NUMPAD_8,
+    NUMPAD_9,
+    MULTIPLY,
+    ADD,
+    SEPARATOR,      // 分隔符，比如 100,000 这里的逗号
+    SUBTRACT,
+    DECIMAL,        // 小数点
+    DIVIDE,
+    NUMPADENTER,
+
+    UNKNOWN
+};
 
 
-// 记录常规状态，主要是按键按下状态，鼠标位置等
-struct MouseState {
+enum ButtonMove{
+    DOWN,
+    UP,
+    DCLICK
+};
+
+
+struct WindowState{
     float time_stamp;
+
+    bool button_map[256];
 
     int mouse_x;
     int mouse_y;
-
-    bool mouse_lbutton :1 ;
-    bool mouse_rbutton :1 ;
-    bool mouse_mbutton :1 ; // 滚轮按下
-    bool mouse_shift :1 ;   // 这个状态其实是 keyboard 导致的，但是我们还是记录一下，因为 mouse 相关的 msg 有这个信息，而且与 kerboard 不一定同步
-    bool mouse_ctrl :1 ;    // 同上
-    bool mouse_xbutton1 :1 ;      // x1 x2 两个侧键
-    bool mouse_xbutton2 :1 ;
-};
-
-struct KeyboardState {
-    // 时间戳（记录状态发生的时间）
-    float time_stamp = 0;
-
-    // 修饰键状态（左右键分开记录，更精细）
-    bool shift_left = false;    // 左Shift
-    bool shift_right = false;   // 右Shift
-    bool ctrl_left = false;     // 左Ctrl
-    bool ctrl_right = false;    // 右Ctrl
-    bool alt_left = false;      // 左Alt
-    bool alt_right = false;     // 右Alt
-    bool win_left = false;      // 左Win键（Windows键）
-    bool win_right = false;     // 右Win键
-
-    // 普通按键状态（键码 -> 按下状态，使用平台无关的虚拟键码）
-    // 键码建议采用 SDL 或 GLFW 的跨平台虚拟键码标准（如 SDLK_a, SDLK_ESCAPE 等）
-    u_int8_t button_map[256];
-
-    // 最近输入的字符（Unicode，适用于 WM_CHAR 类消息）
-    wchar_t input_char = 0;
-    bool is_dead_char = false;  // 是否为死键（如重音符号）
-
-    // 辅助信息：按键重复次数（仅用于按下重复场景）
-    uint16_t repeat_count = 0;
-};
-
-struct WindowState{
-    MouseState mouse_state;
+    
+    Button last_press;
+    u_int16_t reapeat;
 };
 
 }
