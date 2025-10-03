@@ -46,17 +46,21 @@ struct KeyBoardEvent{
     ButtonMove move;
 };
 
-union Event{
-    Event(){
+struct Event{
+    Event(){}
+    Event(size_t id) {
+        window_id = id;
         time_stamp = fg_utils::GetTime();
     }
     Event(const Event& other_event){
         type = other_event.type;
         time_stamp = other_event.time_stamp;
         data = other_event.data;
+        window_id = other_event.window_id;
     }
-    EventType type;
+    size_t window_id;
     float time_stamp;
+    EventType type;
     union {
         CommonEvent common_event;
         MouseMoveEvent mouse_move_event;
@@ -68,5 +72,14 @@ union Event{
 
 bool PollEvent(Event* event);
 bool PushEvent(Event* event);
+
+struct WindowRegInfo{
+    size_t window_id;
+    void* window;
+    WindowState* state;
+};
+
+void RegisterWindow(const WindowRegInfo& reg_info);
+void UnregisterWindow(size_t window_id);
 
 }

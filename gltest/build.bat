@@ -1,2 +1,2 @@
-cl.exe  /DUNICODE /D_UNICODE .\test.cc .\src\fg_window\window.cc .\src\fg_interact\event.cc .\src\fg_gl\gl.cc /I".\src" /I".\src\third_party"   /link /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup user32.lib gdi32.lib ole32.lib shell32.lib opengl32.lib /out:a.exe 
+cl.exe  /DUNICODE /D_UNICODE .\windows_main.cc .\render.cc  ..\src\fg_window\window.cc ..\src\fg_utils\time.cc ..\src\fg_utils\windows_console.cc ..\src\fg_window\window_proc.cc ..\src\fg_interact\event.cc ..\src\fg_gl\gl.cc /I"..\include" /I"..\src" /I"..\src\third_party"   /link /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup user32.lib gdi32.lib ole32.lib shell32.lib opengl32.lib /out:.\a.exe 
 del *.obj

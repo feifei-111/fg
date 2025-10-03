@@ -1,5 +1,6 @@
 #include "render.h"
 #include <chrono>
+#include <iostream>
 
 
 float vertices[] = {
@@ -88,6 +89,7 @@ Render::Render():
 }
 
 void Render::Draw(){
+    std::cout << "draw" << std::endl;
     float timeValue = fg_utils::GetTime();
     const float radius = 10.0f;
     float camX = sin(timeValue) * radius;

@@ -3,13 +3,27 @@
 #endif
 
 #include<iostream>
+#include<unordered_map>
+
 #include"fg_interact/event.h"
 
 
 
 namespace fg_interact{
 
-struct EventListClass{
+
+static std::unordered_map<size_t, WindowRegInfo> GlobalWindowRegMap;
+
+void RegisterWindow(const WindowRegInfo& reg_info){
+    GlobalWindowRegMap.emplace(reg_info.window_id, reg_info);
+}
+
+void UnregisterWindow(size_t window_id){
+    GlobalWindowRegMap.erase(window_id);    
+}
+
+
+struct EventList{
     static constexpr unsigned int Capacity = 256;
 
     Event events_[Capacity];
@@ -23,6 +37,7 @@ struct EventListClass{
 
     // SDL 里面的 event 也是拷贝的，反正先写了再说
     bool PushEvent(Event* event){
+        std::cout << "when push: " << event->type  << ", " << event->window_id << ", " <<event->time_stamp << std::endl;
         if (count_ == Capacity){
             return false;
         }
@@ -47,10 +62,10 @@ struct EventListClass{
     }
 };
 
-static EventListClass EventList;
+static EventList GlobalEventList;
 
 bool PushEvent(Event* event){
-    return EventList.PushEvent(event);
+    return GlobalEventList.PushEvent(event);
 }
 
 static void UpdateState(Event* event, WindowState* state){
@@ -90,15 +105,15 @@ static void UpdateState(Event* event, WindowState* state){
 #ifdef _WIN32
 
 
-bool PollEvent(Event* event, WindowState* state){
+bool PollEvent(Event* event){
 
-    if (EventList.Empty()){
+    if (GlobalEventList.Empty()){
         // 除了耗时上限，这里还可以加一些关于处理的 msg 数量上线
         // 应该至少还增加了一个 event
         // end_time = GetTime() + 1;
         MSG msg;
 
-        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) && EventList.Count() < EventList.Capacity) {
+        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) && GlobalEventList.Count() < GlobalEventList.Capacity) {
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
 
@@ -111,9 +126,15 @@ bool PollEvent(Event* event, WindowState* state){
         
     }
 
-    if(EventList.PopHeadEvent(event)){
-        UpdateState(event, state);
-        return true;
+    if(GlobalEventList.PopHeadEvent(event)){
+        // std::cout << event->type  << ", " << event->window_id << ", " <<event->time_stamp << std::endl;
+        if (GlobalWindowRegMap.find(event->window_id) != GlobalWindowRegMap.end()){
+            UpdateState(event, GlobalWindowRegMap[event->window_id].state);
+            return true;
+        }else{
+            std::cout << "window id: " << event->window_id << " not registered !!!" << std::endl;
+            exit(0);
+        }
     }else{
         return false;
     }

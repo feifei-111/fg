@@ -2,7 +2,7 @@
 
 namespace fg_interact{
 
-enum Button {
+enum class Button {
     // mouse part
     MS_LBUTTON,
     MS_RBUTTON,
@@ -111,7 +111,7 @@ enum Button {
     PRIOR,
     NEXT,
     INSERT,
-    DELETE,
+    DEL,
     SCREEN_SHOT,
     SCROLL,     // 基本被淘汰的功能
     PAUSE,
@@ -134,13 +134,13 @@ enum Button {
     SUBTRACT,
     DECIMAL,        // 小数点
     DIVIDE,
-    NUMPADENTER,
+    // NUMPADENTER, 小键盘 return 不区分了
 
     UNKNOWN
 };
 
 
-enum ButtonMove{
+enum class ButtonMove{
     DOWN,
     UP,
     DCLICK
@@ -154,9 +154,6 @@ struct WindowState{
 
     int mouse_x;
     int mouse_y;
-    
-    Button last_press;
-    u_int16_t reapeat;
 };
 
 }

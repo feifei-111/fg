@@ -1,6 +1,8 @@
 #pragma once
 #include "fg_utils/time.h"
 
+namespace fg_utils{
 #ifdef _WIN32
-#include "fg_utils/windows_console.h"
+void CreateDebugConsole();
 #endif
+}
