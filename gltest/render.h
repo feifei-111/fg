@@ -1,4 +1,6 @@
 #include <fg.h>
+
+
 struct Render{
     Render();
     fg_gl::ShaderProgram program;
