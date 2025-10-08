@@ -194,6 +194,9 @@ void ShaderProgram::UniformFloat(const std::string &name, float value) const {
 void ShaderProgram::UniformFloat3(const std::string &name, float v1, float v2, float v3){
     glUniform3f(glGetUniformLocation(program_, name.c_str()), v1, v2, v3); 
 }
+void ShaderProgram::UniformFloatMat3Vec(const std::string &name, float* data, size_t mat_num, unsigned int transpose){
+    glUniformMatrix3fv(glGetUniformLocation(program_, name.c_str()), mat_num, transpose, data);
+}
 void ShaderProgram::UniformFloatMat4Vec(const std::string &name, float* data, size_t mat_num, unsigned int transpose){
     glUniformMatrix4fv(glGetUniformLocation(program_, name.c_str()), mat_num, transpose, data);
 }
@@ -232,6 +235,7 @@ EBO::EBO(unsigned int* data, unsigned int data_size, unsigned int draw_type){
     glGenBuffers(1, &ebo_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, data_size, data, draw_type);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 void EBO::Bind() const {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
@@ -245,7 +249,6 @@ EBO::~EBO(){
 
 VAO::VAO(){
     glGenVertexArrays(1, &vao_);
-    glBindVertexArray(vao_);
 }
 void VAO::Bind() const {
     glBindVertexArray(vao_);

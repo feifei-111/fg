@@ -32,6 +32,7 @@ struct ShaderProgram{
     void UniformInt(const std::string &name, int value) const;
     void UniformFloat(const std::string &name, float value) const;
     void UniformFloat3(const std::string &name, float a, float b, float c);
+    void UniformFloatMat3Vec(const std::string &name, float* data, size_t mat_num=1, unsigned int transpose=GL_FALSE);
     void UniformFloatMat4Vec(const std::string &name, float* data, size_t mat_num=1, unsigned int transpose=GL_FALSE);
 
 private:
@@ -66,6 +67,13 @@ struct VBO{
         glGenBuffers(1, &vbo_);
         glBindBuffer(GL_ARRAY_BUFFER, vbo_);
         glBufferData(GL_ARRAY_BUFFER, data_size, data, draw_type);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    // if reuse same vbo
+    void ResetAttr(int attr_idx=0, int column_idx=0){
+        attr_idx_ = attr_idx;
+        column_idx_ = (Dtype*)0 + column_idx;
     }
 
     void SetAttr(int column_size, unsigned int norm=GL_FALSE){
@@ -81,6 +89,7 @@ struct VBO{
     void UnBind() const {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
+
     ~VBO(){
         UnBind();
         glDeleteBuffers(1, &vbo_);

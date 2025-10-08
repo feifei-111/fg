@@ -4,80 +4,75 @@
 
 
 float vertices[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
 
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  0.0f, 1.0f,
 
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, -1.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, -1.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
 
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  0.0f,  0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  0.0f,  0.0f,
 
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  0.0f, -1.0f,  0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,  0.0f, -1.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,  0.0f, -1.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,  0.0f, -1.0f,  0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  0.0f, -1.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  0.0f, -1.0f,  0.0f,
 
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  1.0f,  0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f,  0.0f
 };
 
-
-glm::vec3 cubePositions[] = {
-    glm::vec3( 0.0f,  0.0f,  0.0f), 
-    glm::vec3( 2.0f,  5.0f, -15.0f), 
-    glm::vec3(-1.5f, -2.2f, -2.5f),  
-    glm::vec3(-3.8f, -2.0f, -12.3f),  
-    glm::vec3( 2.4f, -0.4f, -3.5f),  
-    glm::vec3(-1.7f,  3.0f, -7.5f),  
-    glm::vec3( 1.3f, -2.0f, -2.5f),  
-    glm::vec3( 1.5f,  2.0f, -2.5f), 
-    glm::vec3( 1.5f,  0.2f, -1.5f), 
-    glm::vec3(-1.3f,  1.0f, -1.5f)  
-};
-
-unsigned int indices[] = {
-    0, 1, 3, // first triangle
-    1, 2, 3  // second triangle
-};
 
 
 Render::Render(): 
         vao(), 
-        vbo(vertices, 5, 36, GL_FLOAT, GL_STATIC_DRAW, 0), 
+        vao_light(),
+        vbo(vertices, 8, 36, GL_FLOAT, GL_STATIC_DRAW, 0), 
         program("./assets/shaders/vertex.glsl", "./assets/shaders/fragment.glsl"),
+        program_light("./assets/shaders/vertex.glsl", "./assets/shaders/f_light.glsl"),
         tex0("./assets/textures/awesomeface.png", 0, GL_RGB, GL_RGBA),
         tex1("./assets/textures/wall.jpg", 3, GL_RGB, GL_RGB)
-    {
+{
+    vao.Bind();
+    vbo.Bind();
     vbo.SetAttr(3, GL_FALSE);
     vbo.SetAttr(2, GL_FALSE);
-
+    vbo.SetAttr(3, GL_TRUE);
     vao.UnBind();
+    vbo.UnBind();
+
+    vbo.ResetAttr();
+    vao_light.Bind();
+    vbo.Bind();
+    vbo.SetAttr(3, GL_FALSE);
+    vbo.SetAttr(2, GL_FALSE);
+    vbo.SetAttr(3, GL_TRUE);
+    vao_light.UnBind();
     vbo.UnBind();
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
@@ -88,59 +83,45 @@ Render::Render():
     glEnable(GL_DEPTH_TEST);  
 }
 
+
 void Render::Draw(){
-    std::cout << "draw" << std::endl;
-    float timeValue = fg_utils::GetTime();
-    const float radius = 10.0f;
-    float camX = sin(timeValue) * radius;
-    float camZ = cos(timeValue) * radius;
-
-    vao.Bind();
-    program.Use();
-
-    program.UniformInt("Tex0", tex0.CurrentUnit());
-    program.UniformInt("Tex1", tex1.CurrentUnit());
-
-    
-    glm::mat4 view;
-    glm::mat4 projection;
-    view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));  
-    projection = glm::perspective(glm::radians(45.0f), (float)800 / (float)600, 0.1f, 100.0f);
-
-    for (int i=0; i<10; i++){
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, cubePositions[i]);
-        model = glm::rotate(model, timeValue * (i+1), glm::vec3(0.5f, 1.0f, 0.0f));
-        glm::mat4 trans = projection * view * model;
-        program.UniformFloatMat4Vec("trans", glm::value_ptr(trans));
-        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        std::cout << "glDrawArrays" << std::endl;
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
-
-}
-
-
-void Render::Draw2(){
-
-    vao.Bind();
-    program.Use();
-    program.UniformInt("Tex0", tex0.CurrentUnit());
-    program.UniformInt("Tex1", tex1.CurrentUnit());
-    
-    glm::mat4 view;
-    glm::mat4 projection;
-
+    glm::mat4 view, projection, model;
     view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);  
     projection = glm::perspective(glm::radians(fov), (float)800 / (float)600, 0.1f, 100.0f);
+    glm::mat4 p_v = projection * view;
 
-    for (int i=0; i<10; i++){
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, cubePositions[i]);
-        model = glm::rotate(model, glm::radians(20.0f * i), glm::vec3(0.5f, 1.0f, 0.0f));
-        glm::mat4 trans = projection * view * model;
-        program.UniformFloatMat4Vec("trans", glm::value_ptr(trans));
-        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
+    glm::vec3 LightPos(sin(current_time) * 2.0f, cos(current_time), 1.0);
+    glm::vec3 CubePos(0.0, 0.0, 0.0);
+    // =================================================
+    // draw light cube，单纯用来说明光源的位置
+    vao_light.Bind();
+    program_light.Use();
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, LightPos);
+    model = glm::scale(model, glm::vec3(0.1f));
+    program.UniformFloatMat4Vec("model", glm::value_ptr(model));
+    program.UniformFloatMat4Vec("p_v", glm::value_ptr(p_v));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    // =================================================
+    vao.Bind();
+    program.Use();
+    program.UniformInt("Tex0", tex0.CurrentUnit());
+    program.UniformInt("Tex1", tex1.CurrentUnit());
+    program.UniformFloat3("LightPos", LightPos.x, LightPos.y, LightPos.z);
+    program.UniformFloat3("LightColor", 1.0, 1.0, 1.0);
+    program.UniformFloat3("ObjColor", 1.0, 0.5, 0.31);
+    program.UniformFloat3("CameraPos", cameraPos.x, cameraPos.y, cameraPos.z);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, CubePos);
+
+    glm::mat3 normal = glm::mat3(glm::transpose(glm::affineInverse(model)));
+    // model = glm::rotate(model, glm::radians(20.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+    program.UniformFloatMat3Vec("normal", glm::value_ptr(normal));
+    program.UniformFloatMat4Vec("model", glm::value_ptr(model));
+    program.UniformFloatMat4Vec("p_v", glm::value_ptr(p_v));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    // =================================================
 }
