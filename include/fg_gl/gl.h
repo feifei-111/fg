@@ -14,6 +14,7 @@ extern "C"{
 
 #include <string>
 #include <iostream>
+#include <glm/glm.hpp>
 
 namespace fg_gl{
 
@@ -32,6 +33,7 @@ struct ShaderProgram{
     void UniformInt(const std::string &name, int value) const;
     void UniformFloat(const std::string &name, float value) const;
     void UniformFloat3(const std::string &name, float a, float b, float c);
+    void UniformFloat3(const std::string &name, const glm::vec3& vec3);
     void UniformFloatMat3Vec(const std::string &name, float* data, size_t mat_num=1, unsigned int transpose=GL_FALSE);
     void UniformFloatMat4Vec(const std::string &name, float* data, size_t mat_num=1, unsigned int transpose=GL_FALSE);
 
@@ -41,6 +43,7 @@ private:
 
 struct Texture2D {
     Texture2D(const char* path, unsigned int tex_unit, unsigned int org_fmt, unsigned int target_fmt, bool flip_load=true);
+    ~Texture2D();
     void BindUnit(unsigned int tex_unit);
     unsigned int CurrentUnit() const;
 private:

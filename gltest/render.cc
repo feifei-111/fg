@@ -48,16 +48,23 @@ float vertices[] = {
 };
 
 
-
 Render::Render(): 
         vao(), 
         vao_light(),
         vbo(vertices, 8, 36, GL_FLOAT, GL_STATIC_DRAW, 0), 
         program("./assets/shaders/vertex.glsl", "./assets/shaders/fragment.glsl"),
-        program_light("./assets/shaders/vertex.glsl", "./assets/shaders/f_light.glsl"),
-        tex0("./assets/textures/awesomeface.png", 0, GL_RGB, GL_RGBA),
-        tex1("./assets/textures/wall.jpg", 3, GL_RGB, GL_RGB)
+        program_light("./assets/shaders/vertex.glsl", "./assets/shaders/f_light.glsl")
 {
+    
+    tex.emplace(
+        "box", std::make_shared<fg_gl::Texture2D>("./assets/textures/container2.png", 0, GL_RGB, GL_RGBA)
+    );
+    tex.emplace(
+        "box_spec", std::make_shared<fg_gl::Texture2D>("./assets/textures/container2_specular.png", 1, GL_RGB, GL_RGBA)
+    );
+    tex.emplace(
+        "box_emission", std::make_shared<fg_gl::Texture2D>("./assets/textures/matrix.jpg", 2, GL_RGB, GL_RGB)
+    );
     vao.Bind();
     vbo.Bind();
     vbo.SetAttr(3, GL_FALSE);
@@ -99,19 +106,24 @@ void Render::Draw(){
     model = glm::mat4(1.0f);
     model = glm::translate(model, LightPos);
     model = glm::scale(model, glm::vec3(0.1f));
-    program.UniformFloatMat4Vec("model", glm::value_ptr(model));
-    program.UniformFloatMat4Vec("p_v", glm::value_ptr(p_v));
+    program_light.UniformFloatMat4Vec("model", glm::value_ptr(model));
+    program_light.UniformFloatMat4Vec("p_v", glm::value_ptr(p_v));
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     // =================================================
+    glm::vec3 BaseLight(1.0, 1.0, 1.0);
     vao.Bind();
     program.Use();
-    program.UniformInt("Tex0", tex0.CurrentUnit());
-    program.UniformInt("Tex1", tex1.CurrentUnit());
-    program.UniformFloat3("LightPos", LightPos.x, LightPos.y, LightPos.z);
-    program.UniformFloat3("LightColor", 1.0, 1.0, 1.0);
-    program.UniformFloat3("ObjColor", 1.0, 0.5, 0.31);
-    program.UniformFloat3("CameraPos", cameraPos.x, cameraPos.y, cameraPos.z);
+    program.UniformInt("material.diffuse", tex["box"]->CurrentUnit());
+    program.UniformInt("material.specular", tex["box_spec"]->CurrentUnit());
+    program.UniformInt("material.emission", tex["box_emission"]->CurrentUnit());
+    program.UniformFloat("material.shininess", 128);
+    program.UniformFloat3("light.position", LightPos);
+    program.UniformFloat3("light.ambient", BaseLight);
+    program.UniformFloat3("light.diffuse", BaseLight);
+    program.UniformFloat3("light.specular", BaseLight);
+    program.UniformFloat3("CameraPos", cameraPos);
+    program.UniformFloat3("CameraFront", cameraFront);
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, CubePos);
@@ -123,5 +135,4 @@ void Render::Draw(){
     program.UniformFloatMat4Vec("p_v", glm::value_ptr(p_v));
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    // =================================================
 }

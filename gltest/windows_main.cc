@@ -21,7 +21,8 @@ int main(){
             if (event.type == fg_interact::EventType::kExitEvent) exit(0);
         }
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        // glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(1.0f, 1,0f, 1.0f, 1.0f);
         // 这里，如果没有 GL_DEPTH_BUFFER_BIT 会导致无法正常显示，
         // 我以为只会导致 zbuffer 没清空，使得显示错位，没想到直接就不输出了，离谱，害我 debug 半天
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -1,15 +1,15 @@
 #include <fg.h>
+#include <unordered_map>
 
 
 struct Render{
 private:
     fg_gl::ShaderProgram program;
     fg_gl::ShaderProgram program_light;
-    fg_gl::Texture2D tex0;
-    fg_gl::Texture2D tex1;
     fg_gl::VAO vao;
     fg_gl::VAO vao_light;
     fg_gl::VBO<float> vbo;
+    std::unordered_map<std::string, std::shared_ptr<fg_gl::Texture2D>> tex;
 
     int type;
 public:

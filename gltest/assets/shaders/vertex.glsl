@@ -15,7 +15,7 @@ uniform mat4 p_v;
 void main()
 {
    TexCoord = tex;
-   Norm = normal * norm;
+   Norm = normalize(normal * norm);
    // 为了在 world space 计算 lighting，还需要 space world 的坐标
    WorldPos = vec3(model * vec4(pos, 1.0));
    gl_Position = p_v * vec4(WorldPos, 1.0);

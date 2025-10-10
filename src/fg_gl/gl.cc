@@ -194,6 +194,9 @@ void ShaderProgram::UniformFloat(const std::string &name, float value) const {
 void ShaderProgram::UniformFloat3(const std::string &name, float v1, float v2, float v3){
     glUniform3f(glGetUniformLocation(program_, name.c_str()), v1, v2, v3); 
 }
+void ShaderProgram::UniformFloat3(const std::string &name, const glm::vec3& vec3){
+    glUniform3f(glGetUniformLocation(program_, name.c_str()), vec3.x, vec3.y, vec3.z); 
+}
 void ShaderProgram::UniformFloatMat3Vec(const std::string &name, float* data, size_t mat_num, unsigned int transpose){
     glUniformMatrix3fv(glGetUniformLocation(program_, name.c_str()), mat_num, transpose, data);
 }
@@ -219,6 +222,10 @@ Texture2D::Texture2D(
     glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(data);
+}
+
+Texture2D::~Texture2D(){
+    glDeleteTextures(1, &texture_);
 }
 
 void Texture2D::BindUnit(unsigned int tex_unit){
