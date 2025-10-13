@@ -122,8 +122,9 @@ bool GLInit(HWND hwnd, HDC hdc){
 }
 #endif
 
+/* ========================= ShaderProgram ========================= */ 
 
-static unsigned int CompileShader(const char* filename, GLenum shader_type) {
+static unsigned int CompileShader(const std::string& filename, GLenum shader_type) {
     // read file
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -153,7 +154,11 @@ static unsigned int CompileShader(const char* filename, GLenum shader_type) {
     return shader;
 }
 
-ShaderProgram::ShaderProgram(const char* vertex_shader_path, const char* fragment_shader_path){
+ShaderProgram::ShaderProgram(const std::string& vertex_shader_path, const std::string& fragment_shader_path){
+    Init(vertex_shader_path, fragment_shader_path);
+}
+
+bool ShaderProgram::Init(const std::string& vertex_shader_path, const std::string& fragment_shader_path){
     unsigned int vertex_shader = CompileShader(vertex_shader_path, GL_VERTEX_SHADER);
     unsigned int fragment_shader = CompileShader(fragment_shader_path, GL_FRAGMENT_SHADER);
     
@@ -167,65 +172,51 @@ ShaderProgram::ShaderProgram(const char* vertex_shader_path, const char* fragmen
     glGetProgramiv(program_, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(program_, 512, NULL, infoLog);
+        std::cout << infoLog << std::endl;
     }
 
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
+    return success;
 }
 
-ShaderProgram::~ShaderProgram(){
-    glDeleteProgram(program_);
-}
-
-unsigned int ShaderProgram::ProgramID(){
-    return program_;
-}
-
-void ShaderProgram::Use(){
-    glUseProgram(program_); 
-}
-
-void ShaderProgram::UniformInt(const std::string &name, int value) const{
-    glUniform1i(glGetUniformLocation(program_, name.c_str()), value); 
-}
-void ShaderProgram::UniformFloat(const std::string &name, float value) const {
-    glUniform1f(glGetUniformLocation(program_, name.c_str()), value); 
-}
-void ShaderProgram::UniformFloat3(const std::string &name, float v1, float v2, float v3){
-    glUniform3f(glGetUniformLocation(program_, name.c_str()), v1, v2, v3); 
-}
-void ShaderProgram::UniformFloat3(const std::string &name, const glm::vec3& vec3){
-    glUniform3f(glGetUniformLocation(program_, name.c_str()), vec3.x, vec3.y, vec3.z); 
-}
-void ShaderProgram::UniformFloatMat3Vec(const std::string &name, float* data, size_t mat_num, unsigned int transpose){
-    glUniformMatrix3fv(glGetUniformLocation(program_, name.c_str()), mat_num, transpose, data);
-}
-void ShaderProgram::UniformFloatMat4Vec(const std::string &name, float* data, size_t mat_num, unsigned int transpose){
-    glUniformMatrix4fv(glGetUniformLocation(program_, name.c_str()), mat_num, transpose, data);
-}
+/* ========================= Texture2D ========================= */ 
 
 Texture2D::Texture2D(
-        const char* path, 
-        unsigned int tex_unit, 
-        unsigned int target_fmt, 
-        unsigned int org_fmt,
+        const std::string& path, 
+        unsigned int tex_unit,
         bool flip_load){
-    stbi_set_flip_vertically_on_load(flip_load);  
+    Init(path, tex_unit, flip_load);
+}
+
+static unsigned int GetOrgFmt(unsigned int channel){
+    switch(channel){
+        case 1: return GL_RED;
+        case 2: return GL_RG;
+        case 3: return GL_RGB;
+        case 4: return GL_RGBA;
+        default: return 0;
+    }
+}
+
+bool Texture2D::Init(
+        const std::string& path, 
+        unsigned int tex_unit,
+        bool flip_load){
     tex_unit_ = tex_unit;
+    stbi_set_flip_vertically_on_load(flip_load);  
     
     glGenTextures(1, &texture_);
     glActiveTexture(GL_TEXTURE0 + tex_unit);
     glBindTexture(GL_TEXTURE_2D, texture_);
 
-    unsigned char *data = stbi_load(path, &width_, &height_, &channel_, 0); 
-    glTexImage2D(GL_TEXTURE_2D, 0, target_fmt, width_, height_, 0, org_fmt, GL_UNSIGNED_BYTE, data);
+    unsigned char *data = stbi_load(path.c_str(), &width_, &height_, &channel_, 0); 
+    unsigned int fmt = GetOrgFmt(channel_);
+    glTexImage2D(GL_TEXTURE_2D, 0, fmt, width_, height_, 0, fmt, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(data);
-}
-
-Texture2D::~Texture2D(){
-    glDeleteTextures(1, &texture_);
+    return true;
 }
 
 void Texture2D::BindUnit(unsigned int tex_unit){
@@ -234,37 +225,19 @@ void Texture2D::BindUnit(unsigned int tex_unit){
     glBindTexture(GL_TEXTURE_2D, texture_);
 }
 
-unsigned int Texture2D::CurrentUnit() const {
-    return tex_unit_;
-}
+/* ========================= EBO ========================= */ 
 
 EBO::EBO(unsigned int* data, unsigned int data_size, unsigned int draw_type){
+    Init(data, data_size, draw_type);
+}
+
+// data size 是整个 buffer 的 size，比如 size * sizeof(unsigned int)
+bool EBO::Init(unsigned int* data, unsigned int data_size, unsigned int draw_type){
     glGenBuffers(1, &ebo_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, data_size, data, draw_type);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-void EBO::Bind() const {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
-}
-void EBO::UnBind() const {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-EBO::~EBO(){
-    glDeleteBuffers(1, &ebo_);
-}
-
-VAO::VAO(){
-    glGenVertexArrays(1, &vao_);
-}
-void VAO::Bind() const {
-    glBindVertexArray(vao_);
-}
-void VAO::UnBind() const {
-    glBindVertexArray(0);
-}
-VAO::~VAO(){
-    glDeleteVertexArrays(1, &vao_);
+    return true;
 }
 
 }

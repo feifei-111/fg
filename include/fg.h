@@ -7,6 +7,7 @@
 
 #include <fg_gl/gl.h>
 #include <fg_utils/utils.h>
+#include <fg_model/model.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
