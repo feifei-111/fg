@@ -61,7 +61,8 @@ struct Model{
     bool ProcessNode(aiNode* node, const aiScene* scene);
     bool ProcessMaterial(aiMaterial* material, const aiScene* scene);
 
-    void Draw(unsigned int mesh_idx, fg_gl::ShaderProgram& program);
+    void DrawMesh(unsigned int mesh_idx, const fg_gl::ShaderProgram& program);
+    void Draw(const fg_gl::ShaderProgram& program);
 };
 
 }

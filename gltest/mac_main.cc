@@ -45,6 +45,9 @@ int main()
 {
     // glfw: initialize and configure
     // ------------------------------
+
+    VLOG(1) << "123...........";
+
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);

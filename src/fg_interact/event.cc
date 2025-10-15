@@ -6,6 +6,7 @@
 #include<unordered_map>
 
 #include"fg_interact/event.h"
+#include"fg_utils/utils.h"
 
 
 
@@ -37,7 +38,7 @@ struct EventList{
 
     // SDL 里面的 event 也是拷贝的，反正先写了再说
     bool PushEvent(Event* event){
-        // std::cout << "when push: " << event->type  << ", " << event->window_id << ", " <<event->time_stamp << std::endl;
+        VLOG(7) << "PushEvent: " << event->type  << ", " << event->window_id << ", " <<event->time_stamp;
         if (count_ == Capacity){
             return false;
         }
@@ -122,19 +123,15 @@ bool PollEvent(Event* event){
             //}
         }
 
-        // std::cout << "end dispatch" << std::endl;
+        VLOG(7) << "End Dispatch";
         
     }
 
     if(GlobalEventList.PopHeadEvent(event)){
         // std::cout << event->type  << ", " << event->window_id << ", " <<event->time_stamp << std::endl;
-        if (GlobalWindowRegMap.find(event->window_id) != GlobalWindowRegMap.end()){
-            UpdateState(event, GlobalWindowRegMap[event->window_id].state);
-            return true;
-        }else{
-            std::cout << "window id: " << event->window_id << " not registered !!!" << std::endl;
-            exit(0);
-        }
+        CHECK(GlobalWindowRegMap.find(event->window_id) != GlobalWindowRegMap.end()) << "window id " << event->window_id << " not registered !!!";
+        UpdateState(event, GlobalWindowRegMap[event->window_id].state);
+        return true;
     }else{
         return false;
     }

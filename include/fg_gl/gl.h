@@ -23,7 +23,7 @@ bool GLInit(HWND hwnd, HDC hdc);
 #endif
 
 struct ShaderProgram{
-    ShaderProgram();
+    ShaderProgram() = default;
     ShaderProgram(const std::string& vertex_shader_path, const std::string& fragment_shader_path);
 
     bool Init(const std::string& vertex_shader_path, const std::string& fragment_shader_path);
@@ -70,7 +70,7 @@ struct Texture2D {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     }
 
-    Texture2D();
+    Texture2D() = default;
     Texture2D(const std::string& path, unsigned int tex_unit=0, bool flip_load=false);
 
     bool Init(const std::string& path, unsigned int tex_unit=0, bool flip_load=false);
@@ -103,7 +103,7 @@ struct GLDtype<float>{
 
 template <typename Dtype>
 struct VBOTemplate{
-    VBOTemplate();
+    VBOTemplate() = default;
     VBOTemplate(
         Dtype* data, 
         unsigned int column_num, 
@@ -174,7 +174,7 @@ private:
 using VBO=VBOTemplate<float>;
 
 struct EBO{
-    EBO();
+    EBO() = default;
     EBO(unsigned int* data, unsigned int data_size, unsigned int draw_type);
 
     bool Init(unsigned int* data, unsigned int data_size, unsigned int draw_type);

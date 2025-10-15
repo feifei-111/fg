@@ -233,7 +233,7 @@ bool Model::ProcessMaterial(aiMaterial* material, const aiScene* scene){
     return true;
 }
 
-void Model::Draw(unsigned int mesh_idx, fg_gl::ShaderProgram& program){
+void Model::DrawMesh(unsigned int mesh_idx, const fg_gl::ShaderProgram& program){
     Mesh* mesh = &mesh_[mesh_idx];
 
     std::unordered_map<unsigned int, unsigned int> counter_map;
@@ -256,6 +256,12 @@ void Model::Draw(unsigned int mesh_idx, fg_gl::ShaderProgram& program){
     
     mesh->UnBindVao();
     glActiveTexture(GL_TEXTURE0);
+}
+
+void Model::Draw(const fg_gl::ShaderProgram& program){
+    for (unsigned int i=0; i<mesh_.size(); i++){
+        DrawMesh(i, program);
+    }
 }
 
 }

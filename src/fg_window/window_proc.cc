@@ -20,7 +20,7 @@ static inline Button GetButtonFromVK(WPARAM wparam);
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
 
-    // std::cout << uMsg << ", " << wParam << ", " <<  lParam << std::endl;
+    VLOG(9) << "WindowProc GetMsg: " << uMsg << ", " << wParam << ", " <<  lParam;
 
     WindowData* data;
     data = (WindowData*)GetWindowLongPtrW(hwnd, GWLP_USERDATA);
@@ -30,10 +30,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
         switch (uMsg) {
             case WM_NCCREATE:
                 data = (WindowData*)(((CREATESTRUCT*)lParam)->lpCreateParams);
-                if (!data){
-                    MessageBoxW(NULL, L"window data init error!", L"Error", MB_ICONERROR);
-                    exit(1);
-                }
+                CHECK(data) << "lpParams(user data) not exist, WindowData init fail";
                 SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG_PTR)data);
                 return DefWindowProcW(hwnd, uMsg, wParam, lParam);
             default:
@@ -42,9 +39,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
     }
 
     // 以下，初始化已经完成， data 和 data->window 已经设置好了
-    if (data->window->GetHWND() != hwnd){
-        MessageBoxW(NULL, L"hwnd not correct!", L"Error", MB_ICONERROR);
-    }
+    CHECK(data->window->GetHWND() != hwnd) << "WindowData and hwnd is not correlated!";
 
     Event event(data->prop.id);
 
