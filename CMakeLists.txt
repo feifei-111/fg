@@ -1,0 +1,74 @@
+cmake_minimum_required(VERSION 4.1.0)
+
+option(VERBOSE "verbose" OFF)
+if(VERBOSE)
+    set(CMAKE_VERBOSE_MAKEFILE ON)
+endif()
+
+project(fg_lib)
+
+set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
+set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
+set(THIRD_PARTY_DIR ${PROJECT_SOURCE_DIR}/third_party)
+
+file(GLOB_RECURSE SRC_CC_FILES ${SRC_DIR}/*.cc) 
+foreach(var ${SRC_CC_FILES})
+    message(${var})
+endforeach()
+
+# set fg src, include, link lib
+add_library(fg SHARED ${SRC_CC_FILES})
+
+target_include_directories(
+    fg PUBLIC 
+    ${SRC_DIR}
+    ${INCLUDE_DIR} 
+    ${THIRD_PARTY_DIR}
+    ${THIRD_PARTY_DIR}/assimp/include
+    ${THIRD_PARTY_DIR}/glog/src
+    ${THIRD_PARTY_DIR}/glog/build
+)
+target_link_directories(
+    fg PUBLIC
+    ${THIRD_PARTY_DIR}/assimp/bin
+    ${THIRD_PARTY_DIR}/glog/build
+)
+target_link_libraries(
+    fg PRIVATE
+    assimp
+    glog
+)
+
+# platform dependency
+if(WIN32)
+    
+elseif(APPLE)
+    find_library(CocoaPATH Cocoa)
+    find_library(IOKitPATH IOKit)
+    find_library(OpenGLPATH OpenGL)
+
+    target_link_libraries(
+        fg PRIVATE
+        ${CocoaPATH}
+        ${IOKitPATH}
+        ${OpenGLPATH}
+    )
+endif()
+
+# compile flags
+add_library(build_flags INTERFACE)
+target_compile_features(build_flags INTERFACE cxx_std_14)
+option(USE_GLOG "use glog" ON)
+if (USE_GLOG)
+    target_compile_definitions(build_flags INTERFACE USE_GLOG)
+    # when using glog, must define GLOG_USE_GLOG_EXPORT or compile fail
+    target_compile_definitions(build_flags INTERFACE GLOG_USE_GLOG_EXPORT)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(build_flags INTERFACE -w)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    target_compile_options(build_flags INTERFACE /W0)
+endif()
+
+target_link_libraries(fg PUBLIC build_flags)

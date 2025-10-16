@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 #include "fg_utils/utils.h"
 
 #include <Windows.h>
@@ -37,3 +39,5 @@ void CreateDebugConsole()
 }
 
 }
+
+#endif

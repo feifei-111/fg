@@ -1,4 +1,6 @@
 #pragma once
+#ifdef _WIN32
+
 #include <Windows.h>
 
 #include "fg_interact/state.h"
@@ -35,5 +37,7 @@ public:
     const fg_interact::WindowState* GetState() const;
     ~Window();
 };
+
+#endif
 
 }

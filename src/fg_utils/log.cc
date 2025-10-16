@@ -1,4 +1,3 @@
-
 #include "fg_utils/log.h"
 
 #ifdef USE_GLOG

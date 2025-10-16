@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 #include <iostream>
 
 #include "fg_window/window.h"
@@ -92,3 +94,5 @@ size_t Window::GetID() const{
 }
 
 }
+
+#endif

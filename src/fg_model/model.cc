@@ -27,7 +27,7 @@ struct VertexAttr{
 };
 
 
-const std::string& GetMaterialTypeStr(unsigned int mat_type){
+const std::string GetMaterialTypeStr(unsigned int mat_type){
     switch(mat_type){
         case 1 : return "Diffuse";
         case 2 : return "Specular";
@@ -40,7 +40,7 @@ const std::string& GetMaterialTypeStr(unsigned int mat_type){
         case 9 : return "Displacement";
         case 10 : return "LightMap";
         case 11 : return "Reflection";
-        default: return std::string();
+        default: return "";
     }
 }
 

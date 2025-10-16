@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 #include <Windowsx.h>
 #include <iostream>
 
@@ -311,7 +313,6 @@ Button GetButtonFromVK(WPARAM wparam){
 }
 
 
-
-
-
 }
+
+#endif
