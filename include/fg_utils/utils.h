@@ -4,6 +4,7 @@
 
 namespace fg_utils{
 #ifdef _WIN32
-void CreateDebugConsole();
+#include "fg_macros.h"
+FG_API void CreateDebugConsole();
 #endif
 }

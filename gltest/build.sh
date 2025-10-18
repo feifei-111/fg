@@ -14,4 +14,5 @@ clang++ mac_main.cc $RENDER_PATH/render.cc -std=c++14 \
     -L$ROOT_PATH/build \
     -L$ROOT_PATH/third_party/glog/build \
     -Wl,-rpath,${ROOT_PATH}/third_party/assimp/bin \
-    -Wl,-rpath,${ROOT_PATH}/third_party/glog/build
+    -Wl,-rpath,${ROOT_PATH}/third_party/glog/build \
+    -Wl,-rpath,${ROOT_PATH}/build

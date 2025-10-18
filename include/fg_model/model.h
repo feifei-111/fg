@@ -1,5 +1,8 @@
+#pragma once
+
 #include <vector>
 #include <string>
+#include <sstream>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -7,11 +10,12 @@
 #include <assimp/postprocess.h>
 
 #include "fg_gl/gl.h"
+#include "fg_macros.h"
 
 
 namespace fg_model{
 
-struct Mesh {
+struct FG_API Mesh {
     // 从 aiMesh 构造 Mesh（处理基础属性）
     Mesh(aiMesh* aiMesh);
     unsigned int GetMaterialIdx() const {
@@ -19,6 +23,9 @@ struct Mesh {
     }
     unsigned int GetNumFaces() const {
         return num_faces_;
+    }
+    unsigned int GetNumVertices() const {
+        return num_vertices_;
     }
     void BindVao(){
         vao_.Bind();
@@ -35,6 +42,7 @@ private:
     unsigned num_colors_;
     unsigned num_textures_;
     unsigned num_faces_;
+    unsigned num_vertices_;
 
     // mesh 类型，比如 triangles, polygons, lines
     // 这是一个 bitwise mix flag，意味着可能出现的 primitive type
@@ -47,15 +55,17 @@ private:
 
 // Assimp 的 material 用 string 记录 texture path
 // 并且 material 中的 texture 会分配一个类型
-struct Material{
+struct FG_API Material{
     std::unordered_map<unsigned int, std::vector<std::string>> texture_paths_;
+    const std::string DebugStr() const;
 };
 
-struct Model{
+struct FG_API Model{
     std::vector<Mesh> mesh_;
     std::unordered_map<std::string, fg_gl::Texture2D> texture_;
     std::vector<Material> material_;
     std::string path_;
+    std::string directory_;
 
     bool Load(const std::string &path);
     bool ProcessNode(aiNode* node, const aiScene* scene);

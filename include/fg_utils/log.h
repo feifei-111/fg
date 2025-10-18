@@ -7,11 +7,12 @@
 struct DummyLog {
     template <typename T>
     DummyLog& operator<<(const T&) {
-    return *this;
+        return *this;
     }
 };
  
 #define VLOG(verbose_level) DummyLog()
 #define CHECK_EQ(a, b) DummyLog()
+#define VLOG_IS_ON(x) 0
 
 #endif

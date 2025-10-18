@@ -13,16 +13,17 @@ extern "C"{
 #endif
 
 #include <string>
-#include <iostream>
 #include <glm/glm.hpp>
+
+#include "fg_macros.h"
 
 namespace fg_gl{
 
 #ifdef _WIN32
-bool GLInit(HWND hwnd, HDC hdc);
+FG_API bool GLInit(HWND hwnd, HDC hdc);
 #endif
 
-struct ShaderProgram{
+struct FG_API ShaderProgram{
     ShaderProgram() = default;
     ShaderProgram(const std::string& vertex_shader_path, const std::string& fragment_shader_path);
 
@@ -62,7 +63,7 @@ private:
     unsigned int program_ = 0;
 };
 
-struct Texture2D {
+struct FG_API Texture2D {
     static void SimpleSetParameter(){
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
@@ -101,6 +102,7 @@ struct GLDtype<float>{
     static constexpr unsigned int value=GL_FLOAT;
 };
 
+// 模版定义在头文件，不需要声明是可见的
 template <typename Dtype>
 struct VBOTemplate{
     VBOTemplate() = default;
@@ -173,7 +175,7 @@ private:
 
 using VBO=VBOTemplate<float>;
 
-struct EBO{
+struct FG_API EBO{
     EBO() = default;
     EBO(unsigned int* data, unsigned int data_size, unsigned int draw_type);
 
@@ -193,7 +195,7 @@ private:
     unsigned int ebo_;
 };
 
-struct VAO{
+struct FG_API VAO{
     VAO(){
         glGenVertexArrays(1, &vao_);
     }

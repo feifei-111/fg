@@ -1,4 +1,5 @@
 #include <chrono>
+#include "fg_macros.h"
 
 namespace fg_utils{
 
@@ -20,10 +21,10 @@ T GetTime(){
 }
 
 template
-float GetTime<float>();
+FG_API float GetTime<float>();
 
 template
-double GetTime<double>();
+FG_API double GetTime<double>();
 
 
 }

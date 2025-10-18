@@ -1,22 +1,19 @@
-#include <vector>
-#include <sstream>
-
 #include "fg_model/model.h"
+#include "fg_utils/utils.h"
 
 
 namespace fg_model{
 
 struct VertexAttr{
     enum AttrType{
-        kNone,
+        kVertex = 0,
         kTextureCoord1D = 1,
         kTextureCoord2D = 2,
         kTextureCoord3D = 3,    // 最多支持到 3D coord
-        kVertex,
-        kNormal,
-        kTangent, // u 向切线
-        kBitangent, // v 向切线
-        kColor
+        kNormal = 4,
+        kTangent = 5, // u 向切线
+        kBitangent = 6, // v 向切线
+        kColor = 7
         // 关于 bone 和 animation 暂时没搞
     };
     VertexAttr();
@@ -24,9 +21,17 @@ struct VertexAttr{
     AttrType type;
     unsigned int idx;   // 多个 color texture 存在时的 idx
     unsigned int size;
+
+    const std::string DebugStr() const{
+        std::ostringstream ss;
+        ss << "type:" << static_cast<unsigned int>(type) 
+            << ", idx:" << idx 
+            << ", size:" << size;
+        return ss.str();
+    }
 };
 
-
+// 对应 assimp 里面定义的 material 类型
 const std::string GetMaterialTypeStr(unsigned int mat_type){
     switch(mat_type){
         case 1 : return "Diffuse";
@@ -44,50 +49,85 @@ const std::string GetMaterialTypeStr(unsigned int mat_type){
     }
 }
 
+const std::string Material::DebugStr() const{
+    std::ostringstream ss;
+    ss << "Material:\n";
+    for(const auto& pair : texture_paths_){
+        ss << "    " << GetMaterialTypeStr(pair.first) << ": ";
+        for (const auto& path : pair.second){
+            ss << path << ", ";
+        }
+        ss << "\n";
+    }
+    return ss.str();
+}
+
 // 参考 game/third_party/assimp/include/assimp/mesh.h
 Mesh::Mesh(aiMesh* ai_mesh) {
+    VLOG(6) << "Parse Mesh";
     primitive_types_ = ai_mesh->mPrimitiveTypes;
     material_idx_ = ai_mesh->mMaterialIndex;
-    num_faces_ = ai_mesh->mNumVertices;
+    num_faces_ = ai_mesh->mNumFaces;
+    num_vertices_ = ai_mesh->mNumVertices;
 
     // step1. 初始化 vertex attr meta 信息
     std::vector<VertexAttr> attr_meta;
 
+    // Vertex
     attr_meta.emplace_back(VertexAttr::kVertex, 0, 3);
+
+    // Normal
     if (ai_mesh->mNormals){
         attr_meta.emplace_back(VertexAttr::kNormal, 0, 3);
     }
-    if (ai_mesh->mTangents){
-        attr_meta.emplace_back(VertexAttr::kTangent, 0, 3);
-    }
-    if (ai_mesh->mBitangents){
-        attr_meta.emplace_back(VertexAttr::kBitangent, 0, 3);
-    }
-    num_colors_ = AI_MAX_NUMBER_OF_COLOR_SETS;
-    for (unsigned int i=0; i<AI_MAX_NUMBER_OF_COLOR_SETS; i++){
-        if (ai_mesh->mColors[i]){
-            attr_meta.emplace_back(VertexAttr::kColor, i, 4);
-        }else {
-            num_colors_ = i;
-            break;
-        }
-    }
-    num_textures_ = AI_MAX_NUMBER_OF_TEXTURECOORDS;
+
+    // texture
+    num_textures_ = 0;
     for (unsigned int i=0; i<AI_MAX_NUMBER_OF_TEXTURECOORDS; i++){
-        if (ai_mesh->mTextureCoords[i] && ai_mesh->mNumUVComponents[i] > 0 && ai_mesh->mNumUVComponents[i] < 4){
+        if (ai_mesh->mTextureCoords[i] && 
+            ai_mesh->mNumUVComponents[i] > 0 && 
+            ai_mesh->mNumUVComponents[i] < 4
+        ){
             attr_meta.emplace_back(
                 static_cast<VertexAttr::AttrType>(ai_mesh->mNumUVComponents[i]), 
                 i, ai_mesh->mNumUVComponents[i]
             );
-        }else {
-            num_textures_ = i;
-            break;
+            num_textures_++;
         }
     }
-    for (unsigned int i=0; i<num_textures_; i++){
-        texture_coords_namse_.emplace_back(
-            ai_mesh->mTextureCoordsNames[i]->C_Str()
-        );
+
+    // tangents
+    if (ai_mesh->mTangents){
+        attr_meta.emplace_back(VertexAttr::kTangent, 0, 3);
+    }
+
+    // bitangent
+    if (ai_mesh->mBitangents){
+        attr_meta.emplace_back(VertexAttr::kBitangent, 0, 3);
+    }
+
+    // color
+    num_colors_ = 0;
+    for (unsigned int i=0; i<AI_MAX_NUMBER_OF_COLOR_SETS; i++){
+        if (ai_mesh->mColors[i]){
+            attr_meta.emplace_back(VertexAttr::kColor, i, 4);
+            num_colors_++;
+        }
+    }
+
+    if(VLOG_IS_ON(6)){
+        VLOG(6) << "attr_meta";
+        for(const VertexAttr& va : attr_meta){
+            VLOG(6) << "    " << va.DebugStr();
+        }
+    }
+
+    if (ai_mesh->mTextureCoordsNames){
+        for (unsigned int i=0; i<num_textures_; i++){
+            texture_coords_namse_.emplace_back(
+                ai_mesh->mTextureCoordsNames[i]->C_Str()
+            );
+        }
     }
 
     // step2. 填充 vbo buffer
@@ -144,19 +184,19 @@ Mesh::Mesh(aiMesh* ai_mesh) {
     // step3. 填充 ebo buffer
     // 注意了，这里如果是有多种不同的 faces，那么就需要分开才行，我们就默认这里就用三角形的，这个可以在 import 的时候指定参数保证
     std::vector<unsigned int> ebo_buf;
-    for (unsigned int i = 0; i < ai_mesh->mNumFaces; i++) {
+    for (unsigned int i = 0; i < num_faces_; i++) {
         const aiFace& face = ai_mesh->mFaces[i];
+        CHECK(face.mNumIndices == 3) << "face must be triangle";
         for (unsigned int j = 0; j < face.mNumIndices; j++) {
             ebo_buf.push_back(face.mIndices[j]);
         }
     }
-    num_faces_ = ai_mesh->mNumFaces;
 
     // step4. 初始化 vao, vbo, ebo
     vbo_.Init(
         vbo_buf.data(), 
-        vbo_buf.size() / ai_mesh->mNumVertices, 
-        ai_mesh->mNumVertices,
+        vbo_buf.size() / num_vertices_, 
+        num_vertices_,
         GL_STATIC_DRAW
     );
 
@@ -171,20 +211,45 @@ Mesh::Mesh(aiMesh* ai_mesh) {
     }
 
     vao_.UnBind();
+    vbo_.UnBind();
+    ebo_.UnBind();
 }
 
 bool Model::Load(const std::string &path){
+    VLOG(6) << "Load model: " << path;
     path_ = path;
+    directory_ = path.substr(0, path.find_last_of('/')) + "/";
+
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-    if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
-    {
+    const aiScene* scene = importer.ReadFile(
+        path, 
+        aiProcess_Triangulate 
+        | aiProcess_FlipUVs
+        | aiProcess_GenSmoothNormals 
+        | aiProcess_CalcTangentSpace
+    );
+    if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+        VLOG(6) << "assimp ReadFile failed";
         return false;
     }
+    VLOG(6) << "assimp ReadFile success";
+
+    VLOG(6) << "begin ProcessNode";
     ProcessNode(scene->mRootNode, scene);
+    VLOG(6) << "end ProcessNode";
+
+    VLOG(6) << "begin ProcessMaterial";
     for(unsigned int i=0; i<scene->mNumMaterials; i++){
         ProcessMaterial(scene->mMaterials[i], scene);
     }
+    VLOG(6) << "end ProcessMaterial";
+
+    VLOG(5) << "Model Load End:"
+        << "\n    Num mesh: " << mesh_.size()     
+        << "\n    Num materials: " << material_.size() 
+        << "\n    Num texture: " << texture_.size()
+        << "\n    Path: " << path_
+        << "\n    Directory: " << directory_;
     return true;
 }
 
@@ -222,22 +287,29 @@ bool Model::ProcessMaterial(aiMaterial* material, const aiScene* scene){
             aiString str;
             material->GetTexture(mat_type, i, &str);
             // check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
-            std::string texture_path = str.C_Str();
+            std::string texture_path = directory_ + str.C_Str();
 
             if (texture_.find(texture_path) == texture_.end()){
                 texture_.emplace(texture_path, texture_path);
             }
-            this_mat->texture_paths_[i].emplace_back(texture_path);
+            this_mat->texture_paths_[mat_type_val].emplace_back(texture_path);
         }
     }
+
+    VLOG(6) << this_mat->DebugStr();
     return true;
 }
 
 void Model::DrawMesh(unsigned int mesh_idx, const fg_gl::ShaderProgram& program){
+    // VLOG(6) << "DrawMesh " << mesh_idx;
     Mesh* mesh = &mesh_[mesh_idx];
 
     std::unordered_map<unsigned int, unsigned int> counter_map;
     unsigned int texture_unit_cnt = 0;
+
+    VLOG(6) << "DrawMesh With: " 
+        << mesh->GetNumVertices() << " vertices, " << mesh->GetNumFaces() << " faces \n"
+        << material_[mesh->GetMaterialIdx()].DebugStr();
 
     for(const auto& pair_data : material_[mesh->GetMaterialIdx()].texture_paths_){
         unsigned int mat_type = pair_data.first;
@@ -246,13 +318,16 @@ void Model::DrawMesh(unsigned int mesh_idx, const fg_gl::ShaderProgram& program)
             std::stringstream ss;
             ss << "Tex" << GetMaterialTypeStr(mat_type) << counter_map[mat_type];
             counter_map[mat_type] += 1;
+            VLOG(6) << "Bind " << path << " as " << ss.str() << " to unit " << texture_[path].CurrentUnit();
             program.UniformInt(ss.str(), texture_[path].CurrentUnit());
         }
     }
+
+    fg_gl::Texture2D::SimpleSetParameter();
     
     mesh->BindVao();
     // 我们就默认会 draw triangle 否则太麻烦了
-    glDrawElements(GL_TRIANGLES, mesh->GetNumFaces(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, mesh->GetNumFaces() * 3, GL_UNSIGNED_INT, 0);
     
     mesh->UnBindVao();
     glActiveTexture(GL_TEXTURE0);

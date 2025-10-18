@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.1.0)
+cmake_minimum_required(VERSION 3.28.0)
 
 option(VERBOSE "verbose" OFF)
 if(VERBOSE)
@@ -16,8 +16,12 @@ foreach(var ${SRC_CC_FILES})
     message(${var})
 endforeach()
 
-# set fg src, include, link lib
+# ====================== fg target ======================
 add_library(fg SHARED ${SRC_CC_FILES})
+set_target_properties(
+    fg PROPERTIES
+    CXX_VISIBILITY_PRESET default
+)
 
 target_include_directories(
     fg PUBLIC 
@@ -55,9 +59,13 @@ elseif(APPLE)
     )
 endif()
 
-# compile flags
+
+# ====================== compile flags ======================
 add_library(build_flags INTERFACE)
+
 target_compile_features(build_flags INTERFACE cxx_std_14)
+target_compile_definitions(build_flags INTERFACE FG_EXPORT)
+
 option(USE_GLOG "use glog" ON)
 if (USE_GLOG)
     target_compile_definitions(build_flags INTERFACE USE_GLOG)
