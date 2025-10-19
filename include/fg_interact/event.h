@@ -1,6 +1,7 @@
 #pragma once
 #include "fg_interact/state.h"
 #include "fg_utils/utils.h"
+#include "fg_macros.h"
 
 namespace fg_interact{
 
@@ -70,8 +71,8 @@ struct Event{
     } data;
 };
 
-bool PollEvent(Event* event);
-bool PushEvent(Event* event);
+bool FG_API PollEvent(Event* event);
+bool FG_API PushEvent(Event* event);
 
 struct WindowRegInfo{
     size_t window_id;
@@ -79,7 +80,7 @@ struct WindowRegInfo{
     WindowState* state;
 };
 
-void RegisterWindow(const WindowRegInfo& reg_info);
-void UnregisterWindow(size_t window_id);
+void FG_API RegisterWindow(const WindowRegInfo& reg_info);
+void FG_API UnregisterWindow(size_t window_id);
 
 }

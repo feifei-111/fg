@@ -46,8 +46,6 @@ int main()
     // glfw: initialize and configure
     // ------------------------------
 
-    VLOG(1) << "123...........";
-
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -69,6 +67,8 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
+
+    // 不显示鼠标
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // glad: load all OpenGL function pointers
@@ -80,6 +80,7 @@ int main()
 
 
     Render render;
+    glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 
     // render loop
     // -----------

@@ -13,16 +13,17 @@ extern "C"{
 #endif
 
 #include <string>
-#include <iostream>
 #include <glm/glm.hpp>
+
+#include "fg_macros.h"
 
 namespace fg_gl{
 
 #ifdef _WIN32
-bool GLInit(HWND hwnd, HDC hdc);
+FG_API bool GLInit(HWND hwnd, HDC hdc);
 #endif
 
-struct ShaderProgram{
+struct FG_API ShaderProgram{
     ShaderProgram() = default;
     ShaderProgram(const std::string& vertex_shader_path, const std::string& fragment_shader_path);
 
@@ -54,15 +55,15 @@ struct ShaderProgram{
     void UniformFloatMat4Vec(const std::string &name, float* data, size_t mat_num=1, unsigned int transpose=GL_FALSE){
         glUniformMatrix4fv(glGetUniformLocation(program_, name.c_str()), mat_num, transpose, data);
     }
-
-    ~ShaderProgram(){
+    void Delete(){
         glDeleteProgram(program_);
+        program_ = 0;
     }
 private:
     unsigned int program_ = 0;
 };
 
-struct Texture2D {
+struct FG_API Texture2D {
     static void SimpleSetParameter(){
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
@@ -71,9 +72,9 @@ struct Texture2D {
     }
 
     Texture2D() = default;
-    Texture2D(const std::string& path, unsigned int tex_unit=0, bool flip_load=false);
+    Texture2D(const std::string& path, unsigned int tex_unit=0, bool flip_load=true);
 
-    bool Init(const std::string& path, unsigned int tex_unit=0, bool flip_load=false);
+    bool Init(const std::string& path, unsigned int tex_unit=0, bool flip_load=true);
     bool Ready() const {
         return texture_ != 0;
     }
@@ -81,9 +82,9 @@ struct Texture2D {
     unsigned int CurrentUnit() const {
         return tex_unit_;
     }
-
-    ~Texture2D(){
+    void Delete(){
         glDeleteTextures(1, &texture_);
+        texture_ = 0;
     }
 private:
     unsigned int texture_ = 0;
@@ -101,6 +102,7 @@ struct GLDtype<float>{
     static constexpr unsigned int value=GL_FLOAT;
 };
 
+// 模版定义在头文件，不需要声明是可见的
 template <typename Dtype>
 struct VBOTemplate{
     VBOTemplate() = default;
@@ -109,8 +111,8 @@ struct VBOTemplate{
         unsigned int column_num, 
         unsigned int vertex_num, 
         unsigned int draw_type, 
-        unsigned int attr_begin=0)
-    {
+        unsigned int attr_begin=0
+    ){
         Init(data, column_num, vertex_num, draw_type, attr_begin);
     }
     bool Init(
@@ -133,17 +135,14 @@ struct VBOTemplate{
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         return true;
     }
-
     bool Ready() const {
         return vbo_ != 0;
     }
-
     // if reuse same vbo
     void ResetAttr(int attr_idx=0, int column_idx=0){
         attr_idx_ = attr_idx;
         column_idx_ = (Dtype*)0 + column_idx;
     }
-
     void SetAttr(int column_size, unsigned int norm=GL_FALSE){
         glVertexAttribPointer(attr_idx_, column_size, GLDtype<Dtype>::value, norm, stride_, (void*)column_idx_);
         glEnableVertexAttribArray(attr_idx_);
@@ -153,14 +152,13 @@ struct VBOTemplate{
     void Bind() const {
         glBindBuffer(GL_ARRAY_BUFFER, vbo_);
     }
-
     void UnBind() const {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
-
-    ~VBOTemplate(){
+    void Delete(){
         UnBind();
         glDeleteBuffers(1, &vbo_);
+        vbo_ = 0;
     }
 private:
     unsigned int vbo_ = 0;
@@ -173,7 +171,7 @@ private:
 
 using VBO=VBOTemplate<float>;
 
-struct EBO{
+struct FG_API EBO{
     EBO() = default;
     EBO(unsigned int* data, unsigned int data_size, unsigned int draw_type);
 
@@ -185,19 +183,21 @@ struct EBO{
     void UnBind() const {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
-
-    ~EBO(){
+    void Delete(){
         glDeleteBuffers(1, &ebo_);
+        ebo_ = 0;
     }
 private:
-    unsigned int ebo_;
+    unsigned int ebo_ = 0;
 };
 
-struct VAO{
-    VAO(){
+struct FG_API VAO{
+    VAO(bool do_init=false){
+        if(do_init){Init();}
+    }
+    void Init(){
         glGenVertexArrays(1, &vao_);
     }
-
     bool Ready() const {
         return vao_ != 0;
     }
@@ -207,11 +207,12 @@ struct VAO{
     void UnBind() const{
         glBindVertexArray(0);
     }
-    ~VAO(){
+    void Delete(){
         glDeleteVertexArrays(1, &vao_);
+        vao_ = 0;
     }
 private:
-    unsigned int vao_;
+    unsigned int vao_ = 0;
 };
 
 }

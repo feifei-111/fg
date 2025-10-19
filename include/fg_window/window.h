@@ -6,9 +6,11 @@
 #include "fg_interact/state.h"
 #include "fg_interact/event.h"
 
+#include "fg_macros.h"
+
 namespace fg_window{
 
-class Window;
+class FG_API Window;
 
 struct WindowProp{
     size_t id;

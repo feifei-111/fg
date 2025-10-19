@@ -14,6 +14,7 @@ private:
     int type;
 public:
     Render();
+    ~Render();
     void Draw();
 
     glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);

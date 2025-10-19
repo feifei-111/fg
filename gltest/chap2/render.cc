@@ -61,8 +61,8 @@ glm::vec3 cubePositions[] = {
 };
 
 Render::Render(): 
-        vao(), 
-        vao_light(),
+        vao(true), 
+        vao_light(true),
         vbo(vertices, 8, 36, GL_STATIC_DRAW, 0), 
         program("./chap2/assets/shaders/vertex.glsl", "./chap2/assets/shaders/fragment.glsl"),
         program_light("./chap2/assets/shaders/vertex.glsl", "./chap2/assets/shaders/f_light.glsl")
@@ -101,6 +101,17 @@ Render::Render():
 
     glEnable(GL_DEPTH_TEST);  
     // glClearColor(0.2f, 0.3f, 0.3f, 1.0f);;
+}
+
+Render::~Render(){
+    program.Delete();
+    program_light.Delete();
+    vao.Delete();
+    vao_light.Delete();
+    vbo.Delete();
+    for (auto& pair: tex){
+        pair.second->Delete();
+    }
 }
 
 

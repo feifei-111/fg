@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 4.1.0)
+cmake_minimum_required(VERSION 3.28.0)
 
-option(VERBOSE "verbose" OFF)
+option(VERBOSE "enable verbose log with detailed command" OFF)
 if(VERBOSE)
     set(CMAKE_VERBOSE_MAKEFILE ON)
 endif()
@@ -16,8 +16,13 @@ foreach(var ${SRC_CC_FILES})
     message(${var})
 endforeach()
 
-# set fg src, include, link lib
+# ====================== fg target ======================
+# 如果不设置成默认可见，glad 里面的符号也需要标，这太麻烦了
 add_library(fg SHARED ${SRC_CC_FILES})
+set_target_properties(
+    fg PROPERTIES
+    CXX_VISIBILITY_PRESET default
+)
 
 target_include_directories(
     fg PUBLIC 
@@ -55,14 +60,18 @@ elseif(APPLE)
     )
 endif()
 
-# compile flags
+
+# ====================== compile flags ======================
 add_library(build_flags INTERFACE)
+
 target_compile_features(build_flags INTERFACE cxx_std_14)
-option(USE_GLOG "use glog" ON)
-if (USE_GLOG)
-    target_compile_definitions(build_flags INTERFACE USE_GLOG)
-    # when using glog, must define GLOG_USE_GLOG_EXPORT or compile fail
-    target_compile_definitions(build_flags INTERFACE GLOG_USE_GLOG_EXPORT)
+target_compile_definitions(build_flags INTERFACE FG_EXPORT)
+# when using glog, must define GLOG_USE_GLOG_EXPORT or compile fail
+target_compile_definitions(build_flags INTERFACE GLOG_USE_GLOG_EXPORT)
+
+option(USE_VLOG "use vlog in fg" OFF)
+if (USE_VLOG)
+    target_compile_definitions(build_flags INTERFACE USE_VLOG)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")

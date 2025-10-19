@@ -5,7 +5,7 @@
 struct Render{
 private:
     int type;
-    fg_model::Model bag_model;
+    fg_scene::Scene bag_model;
     fg_gl::ShaderProgram program;
 public:
     Render();

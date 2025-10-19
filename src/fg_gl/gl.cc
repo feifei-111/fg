@@ -1,3 +1,6 @@
+#include <fstream>
+#include <sstream>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #undef STB_IMAGE_IMPLEMENTATION
@@ -15,10 +18,7 @@ extern "C"{
 }
 
 #include "fg_gl/gl.h"
-
-#include <iostream>
-#include <fstream>
-#include <sstream>
+#include "fg_utils/utils.h"
 
 
 namespace fg_gl{
@@ -57,13 +57,13 @@ bool GLInit(HWND hwnd, HDC hdc){
     // wglCreateContext 这个接口只能创建 1.x 版本的 rc
     HGLRC temp_rc = wglCreateContext(hdc);
     if(!temp_rc){
-        std::cout << "temp_rc" << std::endl;
+        VLOG(0) << "temp_rc" ;
         return false;
     }
 
     // 设置成当前的渲染设备
     if(!wglMakeCurrent(hdc, temp_rc)){
-        std::cout << "wglMakeCurrent" << std::endl;
+        VLOG(0) << "wglMakeCurrent" ;
         return false;
     }
 
@@ -71,7 +71,7 @@ bool GLInit(HWND hwnd, HDC hdc){
     PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = 
     (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
     if(!wglCreateContextAttribsARB){
-        std::cout << "wglGetProcAddress wglCreateContextAttribsARB" << std::endl;
+        VLOG(0) << "wglGetProcAddress wglCreateContextAttribsARB" ;
         return false;
     }
 
@@ -86,7 +86,7 @@ bool GLInit(HWND hwnd, HDC hdc){
 
     HGLRC morden_render_ctx = wglCreateContextAttribsARB(hdc, 0, attribs);
     if(!morden_render_ctx){
-        std::cout << "morden_render_ctx" << std::endl;
+        VLOG(0) << "morden_render_ctx" ;
         return false;
     }
 
@@ -98,11 +98,11 @@ bool GLInit(HWND hwnd, HDC hdc){
 
     // 初始化 glad，现在要求 rc 是 3.3+
     if (!gladLoaderLoadWGL(hdc)){
-        std::cout << "gladLoaderLoadWGL" << std::endl;
+        VLOG(0) << "gladLoaderLoadWGL" ;
         return false;
     }
     if (!gladLoaderLoadGL()){
-        std::cout << "gladLoaderLoadGL" << std::endl;
+        VLOG(0) << "gladLoaderLoadGL" ;
         return false;
     }
 
@@ -128,7 +128,7 @@ static unsigned int CompileShader(const std::string& filename, GLenum shader_typ
     // read file
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cout << "open file failed: " << filename << std::endl;
+        VLOG(0) << "open file failed: " << filename ;
         return 0; // 文件打开失败
     }
     std::stringstream stream;
@@ -145,10 +145,9 @@ static unsigned int CompileShader(const std::string& filename, GLenum shader_typ
     int success;
     char infoLog[512];
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
+    if (!success){
         glGetShaderInfoLog(shader, 512, NULL, infoLog);
-        std::cout << filename << ", shader compile err: \n" << infoLog << std::endl;
+        LOG(INFO) << filename << ", shader compile err: \n" << infoLog ;
         return 0;
     }
     return shader;
@@ -172,7 +171,7 @@ bool ShaderProgram::Init(const std::string& vertex_shader_path, const std::strin
     glGetProgramiv(program_, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(program_, 512, NULL, infoLog);
-        std::cout << infoLog << std::endl;
+        VLOG(0) << infoLog;
     }
 
     glDeleteShader(vertex_shader);
@@ -203,6 +202,7 @@ bool Texture2D::Init(
         const std::string& path, 
         unsigned int tex_unit,
         bool flip_load){
+    VLOG(6) << "Load Texture2D " << path;
     tex_unit_ = tex_unit;
     stbi_set_flip_vertically_on_load(flip_load);  
     
@@ -211,6 +211,7 @@ bool Texture2D::Init(
     glBindTexture(GL_TEXTURE_2D, texture_);
 
     unsigned char *data = stbi_load(path.c_str(), &width_, &height_, &channel_, 0); 
+    CHECK(data) << "load texture " << path << " failed, reason: " << stbi_failure_reason();
     unsigned int fmt = GetOrgFmt(channel_);
     glTexImage2D(GL_TEXTURE_2D, 0, fmt, width_, height_, 0, fmt, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
