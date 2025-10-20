@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files
+        name: Check for large added files
+        args: ["--maxkb=50000"]  # 最大 50MB
+
+      - id: end-of-file-fixer
+        name: Fix end of files (add trailing newline)
+        files: ^(src|include)/.*\.(cpp|cxx|cc|c|h|hpp|hxx|hh)$
+
+      - id: trailing-whitespace
+        name: Remove trailing whitespace
+        files: ^(src|include)/.*\.(cpp|cxx|cc|c|h|hpp|hxx|hh)$
+
+      - id: check-yaml
+        name: Check YAML syntax
+
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.6
+    hooks:
+      - id: clang-format
+        name: Format C++ code with clang-format
+        files: ^(src|include)/.*\.(cpp|cxx|cc|c|h|hpp|hxx|hh)$
+        args: ["--style=file", "--verbose"]

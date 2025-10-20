@@ -5,14 +5,14 @@
 #include "stb_image.h"
 #undef STB_IMAGE_IMPLEMENTATION
 
-extern "C"{
+extern "C" {
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #undef GLAD_GL_IMPLEMENTATION
 
 #ifdef _WIN32
 #define GLAD_WGL_IMPLEMENTATION
-#include <glad/wgl.h> 
+#include <glad/wgl.h>
 #undef GLAD_WGL_IMPLEMENTATION
 #endif
 }
@@ -20,31 +20,40 @@ extern "C"{
 #include "fg_gl/gl.h"
 #include "fg_utils/utils.h"
 
+namespace fg_gl {
 
-namespace fg_gl{
-    
 #ifdef _WIN32
 // 关于 log，后面再加
-bool GLInit(HWND hwnd, HDC hdc){
-
+bool GLInit(HWND hwnd, HDC hdc) {
     // 设置像素格式，并绑到 hdc
     PIXELFORMATDESCRIPTOR pfd = {
-        sizeof(PIXELFORMATDESCRIPTOR), // 结构体大小
-        1,                            // 版本号
-        PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, // flags，包括双缓冲
-        PFD_TYPE_RGBA,                 // RGBA 颜色类型
-        32,                            // 32 位颜色深度
-        0, 0, 0, 0, 0, 0,              // 忽略颜色位
-        0,                             // 无 alpha 缓冲区
-        0,                             // 忽略移位位
-        0,                             // 无累积缓冲区
-        0, 0, 0, 0,                    // 忽略累积位
-        24,                            // 24 位深度缓冲区
-        8,                             // 8 位模板缓冲区
-        0,                             // 无辅助缓冲区
-        PFD_MAIN_PLANE,                // 主层
-        0,                             // 保留
-        0, 0, 0                        // 忽略层掩码
+      sizeof(PIXELFORMATDESCRIPTOR),  // 结构体大小
+      1,                              // 版本号
+      PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL |
+        PFD_DOUBLEBUFFER,  // flags，包括双缓冲
+      PFD_TYPE_RGBA,       // RGBA 颜色类型
+      32,                  // 32 位颜色深度
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,  // 忽略颜色位
+      0,  // 无 alpha 缓冲区
+      0,  // 忽略移位位
+      0,  // 无累积缓冲区
+      0,
+      0,
+      0,
+      0,               // 忽略累积位
+      24,              // 24 位深度缓冲区
+      8,               // 8 位模板缓冲区
+      0,               // 无辅助缓冲区
+      PFD_MAIN_PLANE,  // 主层
+      0,               // 保留
+      0,
+      0,
+      0  // 忽略层掩码
     };
 
     // 这个 choose 接口是 windows sdk 提供的
@@ -52,41 +61,44 @@ bool GLInit(HWND hwnd, HDC hdc){
     int pixelFormat = ChoosePixelFormat(hdc, &pfd);
     SetPixelFormat(hdc, pixelFormat, &pfd);
 
-    // 初始化 glad，因为 opengl 要求必须在 rc 非空的情况下才能 load 目标函数，所以我们需要一个 temp rc
-    // 创建 temp rendering context
+    // 初始化 glad，因为 opengl 要求必须在 rc 非空的情况下才能 load
+    // 目标函数，所以我们需要一个 temp rc 创建 temp rendering context
     // wglCreateContext 这个接口只能创建 1.x 版本的 rc
     HGLRC temp_rc = wglCreateContext(hdc);
-    if(!temp_rc){
-        VLOG(0) << "temp_rc" ;
+    if (!temp_rc) {
+        VLOG(0) << "temp_rc";
         return false;
     }
 
     // 设置成当前的渲染设备
-    if(!wglMakeCurrent(hdc, temp_rc)){
-        VLOG(0) << "wglMakeCurrent" ;
+    if (!wglMakeCurrent(hdc, temp_rc)) {
+        VLOG(0) << "wglMakeCurrent";
         return false;
     }
 
     // 设置 rc 之后可以加载 extension 函数
-    PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = 
-    (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
-    if(!wglCreateContextAttribsARB){
-        VLOG(0) << "wglGetProcAddress wglCreateContextAttribsARB" ;
+    PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB =
+      (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress(
+        "wglCreateContextAttribsARB");
+    if (!wglCreateContextAttribsARB) {
+        VLOG(0) << "wglGetProcAddress wglCreateContextAttribsARB";
         return false;
     }
 
     // 创建 opengl 3.3 的 rc，注意，这个创建必须在删除 temp_rc 之前
-    // 因为 wglCreateContextAttribsARB 这个函数依赖 temp_rc 存在，如果删掉，下面的创建有问题
-    const int attribs[] = {
-        WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-        WGL_CONTEXT_MINOR_VERSION_ARB, 3,
-        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-        0
-    };
+    // 因为 wglCreateContextAttribsARB 这个函数依赖 temp_rc
+    // 存在，如果删掉，下面的创建有问题
+    const int attribs[] = {WGL_CONTEXT_MAJOR_VERSION_ARB,
+                           3,
+                           WGL_CONTEXT_MINOR_VERSION_ARB,
+                           3,
+                           WGL_CONTEXT_PROFILE_MASK_ARB,
+                           WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+                           0};
 
     HGLRC morden_render_ctx = wglCreateContextAttribsARB(hdc, 0, attribs);
-    if(!morden_render_ctx){
-        VLOG(0) << "morden_render_ctx" ;
+    if (!morden_render_ctx) {
+        VLOG(0) << "morden_render_ctx";
         return false;
     }
 
@@ -97,23 +109,25 @@ bool GLInit(HWND hwnd, HDC hdc){
     wglMakeCurrent(hdc, morden_render_ctx);
 
     // 初始化 glad，现在要求 rc 是 3.3+
-    if (!gladLoaderLoadWGL(hdc)){
-        VLOG(0) << "gladLoaderLoadWGL" ;
+    if (!gladLoaderLoadWGL(hdc)) {
+        VLOG(0) << "gladLoaderLoadWGL";
         return false;
     }
-    if (!gladLoaderLoadGL()){
-        VLOG(0) << "gladLoaderLoadGL" ;
+    if (!gladLoaderLoadGL()) {
+        VLOG(0) << "gladLoaderLoadGL";
         return false;
     }
 
     // 加载之后，这里应该能找到 glGetString 符号，不然就是加载有问题
-    if (!glGetString){
+    if (!glGetString) {
         return false;
     }
     const char* version = (const char*)glGetString(GL_VERSION);
     const char* renderer = (const char*)glGetString(GL_RENDERER);
     // 这个 log 先留着后面改
-    printf("Minimum OpenGL support:\nVersion: %s\nRenderer: %s\n", version, renderer);
+    printf("Minimum OpenGL support:\nVersion: %s\nRenderer: %s\n",
+           version,
+           renderer);
 
     // opengl 的一些基础设置，先设置一下
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -122,14 +136,15 @@ bool GLInit(HWND hwnd, HDC hdc){
 }
 #endif
 
-/* ========================= ShaderProgram ========================= */ 
+/* ========================= ShaderProgram ========================= */
 
-static unsigned int CompileShader(const std::string& filename, GLenum shader_type) {
+static unsigned int CompileShader(const std::string& filename,
+                                  GLenum shader_type) {
     // read file
     std::ifstream file(filename);
     if (!file.is_open()) {
-        VLOG(0) << "open file failed: " << filename ;
-        return 0; // 文件打开失败
+        VLOG(0) << "open file failed: " << filename;
+        return 0;  // 文件打开失败
     }
     std::stringstream stream;
     stream << file.rdbuf();
@@ -145,22 +160,26 @@ static unsigned int CompileShader(const std::string& filename, GLenum shader_typ
     int success;
     char infoLog[512];
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success){
+    if (!success) {
         glGetShaderInfoLog(shader, 512, NULL, infoLog);
-        LOG(INFO) << filename << ", shader compile err: \n" << infoLog ;
+        LOG(INFO) << filename << ", shader compile err: \n" << infoLog;
         return 0;
     }
     return shader;
 }
 
-ShaderProgram::ShaderProgram(const std::string& vertex_shader_path, const std::string& fragment_shader_path){
+ShaderProgram::ShaderProgram(const std::string& vertex_shader_path,
+                             const std::string& fragment_shader_path) {
     Init(vertex_shader_path, fragment_shader_path);
 }
 
-bool ShaderProgram::Init(const std::string& vertex_shader_path, const std::string& fragment_shader_path){
-    unsigned int vertex_shader = CompileShader(vertex_shader_path, GL_VERTEX_SHADER);
-    unsigned int fragment_shader = CompileShader(fragment_shader_path, GL_FRAGMENT_SHADER);
-    
+bool ShaderProgram::Init(const std::string& vertex_shader_path,
+                         const std::string& fragment_shader_path) {
+    unsigned int vertex_shader =
+      CompileShader(vertex_shader_path, GL_VERTEX_SHADER);
+    unsigned int fragment_shader =
+      CompileShader(fragment_shader_path, GL_FRAGMENT_SHADER);
+
     program_ = glCreateProgram();
     glAttachShader(program_, vertex_shader);
     glAttachShader(program_, fragment_shader);
@@ -179,61 +198,69 @@ bool ShaderProgram::Init(const std::string& vertex_shader_path, const std::strin
     return success;
 }
 
-/* ========================= Texture2D ========================= */ 
+/* ========================= Texture2D ========================= */
 
-Texture2D::Texture2D(
-        const std::string& path, 
-        unsigned int tex_unit,
-        bool flip_load){
+Texture2D::Texture2D(const std::string& path,
+                     unsigned int tex_unit,
+                     bool flip_load) {
     Init(path, tex_unit, flip_load);
 }
 
-static unsigned int GetOrgFmt(unsigned int channel){
-    switch(channel){
-        case 1: return GL_RED;
-        case 2: return GL_RG;
-        case 3: return GL_RGB;
-        case 4: return GL_RGBA;
-        default: return 0;
+static unsigned int GetOrgFmt(unsigned int channel) {
+    switch (channel) {
+        case 1:
+            return GL_RED;
+        case 2:
+            return GL_RG;
+        case 3:
+            return GL_RGB;
+        case 4:
+            return GL_RGBA;
+        default:
+            return 0;
     }
 }
 
-bool Texture2D::Init(
-        const std::string& path, 
-        unsigned int tex_unit,
-        bool flip_load){
+bool Texture2D::Init(const std::string& path,
+                     unsigned int tex_unit,
+                     bool flip_load) {
     VLOG(6) << "Load Texture2D " << path;
     tex_unit_ = tex_unit;
-    stbi_set_flip_vertically_on_load(flip_load);  
-    
+    stbi_set_flip_vertically_on_load(flip_load);
+
     glGenTextures(1, &texture_);
     glActiveTexture(GL_TEXTURE0 + tex_unit);
     glBindTexture(GL_TEXTURE_2D, texture_);
 
-    unsigned char *data = stbi_load(path.c_str(), &width_, &height_, &channel_, 0); 
-    CHECK(data) << "load texture " << path << " failed, reason: " << stbi_failure_reason();
+    unsigned char* data =
+      stbi_load(path.c_str(), &width_, &height_, &channel_, 0);
+    CHECK(data) << "load texture " << path
+                << " failed, reason: " << stbi_failure_reason();
     unsigned int fmt = GetOrgFmt(channel_);
-    glTexImage2D(GL_TEXTURE_2D, 0, fmt, width_, height_, 0, fmt, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(
+      GL_TEXTURE_2D, 0, fmt, width_, height_, 0, fmt, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(data);
     return true;
 }
 
-void Texture2D::BindUnit(unsigned int tex_unit){
+void Texture2D::BindUnit(unsigned int tex_unit) {
     tex_unit_ = tex_unit;
     glActiveTexture(GL_TEXTURE0 + tex_unit);
     glBindTexture(GL_TEXTURE_2D, texture_);
 }
 
-/* ========================= EBO ========================= */ 
+/* ========================= EBO ========================= */
 
-EBO::EBO(unsigned int* data, unsigned int data_size, unsigned int draw_type){
+EBO::EBO(unsigned int* data, unsigned int data_size, unsigned int draw_type) {
     Init(data, data_size, draw_type);
 }
 
 // data size 是整个 buffer 的 size，比如 size * sizeof(unsigned int)
-bool EBO::Init(unsigned int* data, unsigned int data_size, unsigned int draw_type){
+bool EBO::Init(unsigned int* data,
+               unsigned int data_size,
+               unsigned int draw_type) {
     glGenBuffers(1, &ebo_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, data_size, data, draw_type);
@@ -241,4 +268,4 @@ bool EBO::Init(unsigned int* data, unsigned int data_size, unsigned int draw_typ
     return true;
 }
 
-}
+}  // namespace fg_gl

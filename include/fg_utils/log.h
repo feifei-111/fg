@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <glog/logging.h>
 
 #ifndef USE_VLOG

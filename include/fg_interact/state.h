@@ -1,6 +1,6 @@
 #pragma once
 
-namespace fg_interact{
+namespace fg_interact {
 
 enum class Button {
     // mouse part
@@ -11,13 +11,13 @@ enum class Button {
     MS_XBUTTON2,
 
     // keyboard part
-    F1, 
-    F2, 
-    F3, 
-    F4, 
-    F5, 
-    F6, 
-    F7, 
+    F1,
+    F2,
+    F3,
+    F4,
+    F5,
+    F6,
+    F7,
     F8,
     F9,
     F10,
@@ -70,21 +70,21 @@ enum class Button {
     ESC,
 
     // 符号 button
-    BACK_QUOTE,          // 反引号，esc 下面的
-    MINUS,              // 减号
-    EQUAL,              // 等号
+    BACK_QUOTE,  // 反引号，esc 下面的
+    MINUS,       // 减号
+    EQUAL,       // 等号
 
     TAB,
-    L_SQUARE_BRACKET,   // 左右方括号
+    L_SQUARE_BRACKET,  // 左右方括号
     R_SQUARE_BRACKET,
-    BACKSLASH,          // 反斜杠
+    BACKSLASH,  // 反斜杠
 
-    SEMICOLON,          // 分号
-    QUOTE,              // 单引号
+    SEMICOLON,  // 分号
+    QUOTE,      // 单引号
 
-    COMMA,              // 逗号
-    PERIOD,             // 句号
-    SLASH,              // 斜杠，除法
+    COMMA,   // 逗号
+    PERIOD,  // 句号
+    SLASH,   // 斜杠，除法
 
     SPACE,
 
@@ -113,7 +113,7 @@ enum class Button {
     INSERT,
     DEL,
     SCREEN_SHOT,
-    SCROLL,     // 基本被淘汰的功能
+    SCROLL,  // 基本被淘汰的功能
     PAUSE,
 
     // 小键盘的数字以及运算符
@@ -130,24 +130,18 @@ enum class Button {
     NUMPAD_9,
     MULTIPLY,
     ADD,
-    SEPARATOR,      // 分隔符，比如 100,000 这里的逗号
+    SEPARATOR,  // 分隔符，比如 100,000 这里的逗号
     SUBTRACT,
-    DECIMAL,        // 小数点
+    DECIMAL,  // 小数点
     DIVIDE,
     // NUMPADENTER, 小键盘 return 不区分了
 
     UNKNOWN
 };
 
+enum class ButtonMove { DOWN, UP, DCLICK };
 
-enum class ButtonMove{
-    DOWN,
-    UP,
-    DCLICK
-};
-
-
-struct WindowState{
+struct WindowState {
     float time_stamp;
 
     bool button_map[256];
@@ -156,4 +150,4 @@ struct WindowState{
     int mouse_y;
 };
 
-}
+}  // namespace fg_interact

@@ -3,14 +3,13 @@
 #include "fg_utils/utils.h"
 
 #include <Windows.h>
-#include <cstdio>
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
+#include <cstdio>
 
-namespace fg_utils{
+namespace fg_utils {
 
-void CreateDebugConsole()
-{
+void CreateDebugConsole() {
     AllocConsole();
 
     HANDLE hStdHandle;
@@ -38,6 +37,6 @@ void CreateDebugConsole()
     SetConsoleTitle(L"FEI_console");
 }
 
-}
+}  // namespace fg_utils
 
 #endif
