@@ -30,8 +30,7 @@ struct GlogInit {
     GlogInit() {
         google::InitGoogleLogging("fg");
         FLAGS_logtostderr = 1;
-        FLAGS_log_prefix = false;
-        // FLAGS_log_prefix = true;
+        FLAGS_log_prefix = true;
         // google::InstallPrefixFormatter(&MyPrefixFormatter);
 
         VLOG(1) << "GLOG Inited!";

@@ -162,8 +162,7 @@ static unsigned int CompileShader(const std::string& filename,
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(shader, 512, NULL, infoLog);
-        LOG(INFO) << filename << ", shader compile err: \n" << infoLog;
-        return 0;
+        CHECK(false) << filename << ", shader compile err: \n" << infoLog;
     }
     return shader;
 }

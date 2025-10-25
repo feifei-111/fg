@@ -41,7 +41,7 @@ void UpdateRender(Render* render){
     render->current_time = lastFrame;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
     // glfw: initialize and configure
     // ------------------------------
@@ -79,7 +79,7 @@ int main()
     }
 
 
-    Render render;
+    Render render(argc, argv);
     glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 
     // render loop

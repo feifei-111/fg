@@ -386,11 +386,12 @@ bool Scene::Load(const std::string& path) {
                         // | aiProcess_GenSmoothNormals
                         // | aiProcess_CalcTangentSpace
       );
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
-        !scene->mRootNode) {
-        VLOG(6) << "assimp ReadFile failed";
-        return false;
-    }
+    CHECK(
+        scene && 
+        !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) &&
+        scene->mRootNode
+    ) << "ASSIMP ReadFile failed: " << importer.GetErrorString();
+
     VLOG(6) << "assimp ReadFile success";
 
     VLOG(6) << "begin parse node";

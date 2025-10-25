@@ -13,7 +13,7 @@ private:
 
     int type;
 public:
-    Render();
+    Render(int argc, char** argv);
     ~Render();
     void Draw();
 

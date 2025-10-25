@@ -4,11 +4,19 @@
 
 
 
-Render::Render(){
-    program.Init("chap3/assets/shaders/vertex.glsl", "chap3/assets/shaders/frag.glsl");
-    VLOG(1) << "start load model";
-    bag_model.Load("chap3/assets/bag/backpack.obj");
-    VLOG(1) << "end load model";
+Render::Render(int argc, char** argv){
+    
+    std::cout << std::endl;
+    if (argc > 1){
+        std::cout << "load "<< argv[1] << std::endl;
+        scene.Load(argv[1]);
+        // 模型如果没有设置 mtl，可能加载不到 tex
+        program.Init("chap3/assets/shaders/vertex.glsl", "chap3/assets/shaders/frag_no_diffuse.glsl");
+    }else{
+        std::cout << "use default model" << std::endl;
+        scene.Load("chap3/assets/bag/backpack.obj");
+        program.Init("chap3/assets/shaders/vertex.glsl", "chap3/assets/shaders/frag.glsl");
+    }
     glEnable(GL_DEPTH_TEST);  
     // glClearColor(0.2f, 0.3f, 0.3f, 1.0f);;
 }
@@ -30,7 +38,5 @@ void Render::Draw(){
     program.UniformFloatMat4Vec("p_v", glm::value_ptr(p_v));
     program.UniformFloatMat4Vec("model", glm::value_ptr(model));
 
-    // bag_model.DrawNode("Plane.008__0", program);
-    // bag_model.DrawNode("Cylinder.049__0", program);
-    bag_model.DrawRoot(program);
+    scene.DrawRoot(program);
 }

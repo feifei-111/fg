@@ -5,10 +5,10 @@
 struct Render{
 private:
     int type;
-    fg_scene::Scene bag_model;
+    fg_scene::Scene scene;
     fg_gl::ShaderProgram program;
 public:
-    Render();
+    Render(int argc, char** argv);
     void Draw();
 
     glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);

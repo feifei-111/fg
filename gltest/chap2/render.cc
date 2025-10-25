@@ -60,7 +60,7 @@ glm::vec3 cubePositions[] = {
     glm::vec3(-1.3f,  1.0f, -1.5f)
 };
 
-Render::Render(): 
+Render::Render(int argc, char** argv): 
         vao(true), 
         vao_light(true),
         vbo(vertices, 8, 36, GL_STATIC_DRAW, 0), 
