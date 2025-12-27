@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.28.0)
 include(GNUInstallDirs)
 
-option(VERBOSE "enable verbose log with detailed command" OFF)
-if(VERBOSE)
-    set(CMAKE_VERBOSE_MAKEFILE ON)
-endif()
-
 project(fg_lib)
 
 # 设置产物默认路径，这个设置需要放在 project 之后

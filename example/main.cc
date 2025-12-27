@@ -19,8 +19,8 @@ int main(){
 
     // 2. Prepare opengl data for rendering
     fgi::ShaderProgram program(
-        fgi::GetAbsolutePath("./assets/vertex_shader.glsl"), 
-        fgi::GetAbsolutePath("./assets/fragment_shader.glsl"));
+        fgi::GetRuntimeAbsPath("./assets/vertex_shader.glsl"), 
+        fgi::GetRuntimeAbsPath("./assets/fragment_shader.glsl"));
     std::cout << program.Ready() << std::endl;
 
     fgi::VAO vao(true/*do init*/);
