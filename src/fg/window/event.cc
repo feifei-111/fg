@@ -15,8 +15,7 @@ std::string_view EventDataName(const EventData& data) {
                       data);
 }
 
-/* ============================ EventQueue Buffer
- * ================================ */
+/* =========================== EventQueue Buffer =========================== */
 
 // 消息循环是全局的，不论有多少线程，都是用同一个消息循环、
 // 所以这个 queue 不需要锁，因为只有一个线程会去 fetch msg
@@ -189,8 +188,7 @@ bool PollEvent(Event* event) {
     }
 }
 
-/* =================================  ========================================
- */
+/* ============================ Event Push ================================= */
 
 bool PushEvent(Event* event) { return GlobalEventQueue.PushEvent(event); }
 Event* PrepareNextEvent(unsigned int window_id) {
