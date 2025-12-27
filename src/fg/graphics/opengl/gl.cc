@@ -1,8 +1,8 @@
 #include <fstream>
 #include <sstream>
 
-#include "stb_image.h"
 #include <glad/gl.h>
+#include "stb_image.h"
 
 #include "fg/graphics/opengl/gl.h"
 #include "fg/utils/log.h"
@@ -138,4 +138,4 @@ bool EBO::Init(unsigned int* data,
     return true;
 }
 
-}  // namespace fg_gl
+}  // namespace fg::graphics::opengl

@@ -104,11 +104,12 @@ struct GLDtype<float> {
 template <typename Dtype>
 struct VBOTemplate {
     VBOTemplate() = default;
-    VBOTemplate(Dtype* data,
-                unsigned int column_num,
-                unsigned int vertex_num,
-                unsigned int draw_type,     // GL_STATIC_DRAW|GL_DYNAMIC_DRAW|GL_STREAM_DRAW
-                unsigned int attr_begin = 0) {
+    VBOTemplate(
+      Dtype* data,
+      unsigned int column_num,
+      unsigned int vertex_num,
+      unsigned int draw_type,  // GL_STATIC_DRAW|GL_DYNAMIC_DRAW|GL_STREAM_DRAW
+      unsigned int attr_begin = 0) {
         Init(data, column_num, vertex_num, draw_type, attr_begin);
     }
     bool Init(Dtype* data,
@@ -203,4 +204,4 @@ private:
     unsigned int vao_ = 0;
 };
 
-}  // namespace fg_gl
+}  // namespace fg::graphics::opengl

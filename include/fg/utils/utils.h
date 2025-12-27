@@ -1,8 +1,8 @@
 #pragma once
-#include <string>
 #include <glm/glm.hpp>
+#include <string>
 
-namespace fg::utils{
+namespace fg::utils {
 
 template <typename T = float>
 T GetTime();
@@ -21,4 +21,4 @@ namespace win32 {
 void CreateConsole();
 }
 #endif
-}
+}  // namespace fg::utils

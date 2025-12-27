@@ -7,6 +7,7 @@ namespace fg::window::glfw {
 class GLFWWindowImpl {
     unsigned int window_id_;
     GLFWwindow* window_;
+
 public:
     GLFWWindowImpl(const WindowConfig& config, WindowBase* base);
     void SwapBuffer() const;
@@ -14,4 +15,4 @@ public:
     ~GLFWWindowImpl();
 };
 
-}
+}  // namespace fg::window::glfw

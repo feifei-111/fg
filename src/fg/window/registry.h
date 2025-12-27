@@ -13,4 +13,4 @@ void FG_API RegisterWindow(const WindowRegisterInfo& reg_info);
 void FG_API UnregisterWindow(unsigned int window_id);
 WindowBase* GetRegisteredWindowPtr(unsigned int window_id);
 
-}
+}  // namespace fg::window

@@ -11,52 +11,52 @@
 namespace fg::graphics::gl_scene {
 
 namespace internal {
-    // 主要支持一下自动转换，后面直接用 pointer 就行了
-    struct AssimpMesh{
-        AssimpMesh(aiMesh* pointer) : ptr(pointer) {}
-        AssimpMesh(std::nullptr_t) : ptr(nullptr) {}
-        aiMesh* ptr;
-    };
-    struct AssimpMaterial{
-        AssimpMaterial(aiMaterial* pointer) : ptr(pointer) {}
-        AssimpMaterial(std::nullptr_t) : ptr(nullptr) {}
-        aiMaterial* ptr;
-    };
-    struct AssimpSceneNode{
-        AssimpSceneNode(aiNode* pointer) : ptr(pointer) {}
-        AssimpSceneNode(std::nullptr_t) : ptr(nullptr) {}
-        aiNode* ptr;
-    };
-}
+// 主要支持一下自动转换，后面直接用 pointer 就行了
+struct AssimpMesh {
+    AssimpMesh(aiMesh* pointer) : ptr(pointer) {}
+    AssimpMesh(std::nullptr_t) : ptr(nullptr) {}
+    aiMesh* ptr;
+};
+struct AssimpMaterial {
+    AssimpMaterial(aiMaterial* pointer) : ptr(pointer) {}
+    AssimpMaterial(std::nullptr_t) : ptr(nullptr) {}
+    aiMaterial* ptr;
+};
+struct AssimpSceneNode {
+    AssimpSceneNode(aiNode* pointer) : ptr(pointer) {}
+    AssimpSceneNode(std::nullptr_t) : ptr(nullptr) {}
+    aiNode* ptr;
+};
+}  // namespace internal
 
 namespace {
-    struct VertexAttr {
-        enum AttrType {
-            kVertex = 0,
-            kTextureCoord1D = 1,
-            kTextureCoord2D = 2,
-            kTextureCoord3D = 3,  // 最多支持到 3D coord
-            kNormal = 4,
-            kTangent = 5,    // u 向切线
-            kBitangent = 6,  // v 向切线
-            kColor = 7
-            // 关于 bone 和 animation 暂时没搞
-        };
-        VertexAttr();
-        VertexAttr(AttrType type, unsigned int idx, unsigned int size)
-            : type(type), idx(idx), size(size) {}
-        AttrType type;
-        unsigned int idx;  // 多个 color texture 存在时的 idx
-        unsigned int size;
-
-        const std::string ToString() const {
-            std::ostringstream ss;
-            ss << "type:" << static_cast<unsigned int>(type) << ", idx:" << idx
-            << ", size:" << size;
-            return ss.str();
-        }
+struct VertexAttr {
+    enum AttrType {
+        kVertex = 0,
+        kTextureCoord1D = 1,
+        kTextureCoord2D = 2,
+        kTextureCoord3D = 3,  // 最多支持到 3D coord
+        kNormal = 4,
+        kTangent = 5,    // u 向切线
+        kBitangent = 6,  // v 向切线
+        kColor = 7
+        // 关于 bone 和 animation 暂时没搞
     };
-}
+    VertexAttr();
+    VertexAttr(AttrType type, unsigned int idx, unsigned int size)
+        : type(type), idx(idx), size(size) {}
+    AttrType type;
+    unsigned int idx;  // 多个 color texture 存在时的 idx
+    unsigned int size;
+
+    const std::string ToString() const {
+        std::ostringstream ss;
+        ss << "type:" << static_cast<unsigned int>(type) << ", idx:" << idx
+           << ", size:" << size;
+        return ss.str();
+    }
+};
+}  // namespace
 
 /* ============================ GLMesh ============================ */
 // 参考 game/third_party/assimp/include/assimp/mesh.h
@@ -252,38 +252,39 @@ void GLMesh::Delete() {
 /* ============================ GLMaterial ============================ */
 // 对应 assimp 里面定义的 material 类型
 namespace {
-    const std::string GetMaterialTypeStr(unsigned int mat_type) {
-        switch (mat_type) {
-            case 1:
-                return "Diffuse";
-            case 2:
-                return "Specular";
-            case 3:
-                return "Ambient";
-            case 4:
-                return "Emissive";
-            case 5:
-                return "Height";
-            case 6:
-                return "Normals";
-            case 7:
-                return "Shininess";
-            case 8:
-                return "Opacity";
-            case 9:
-                return "Displacement";
-            case 10:
-                return "LightMap";
-            case 11:
-                return "Reflection";
-            default:
-                return "";
-        }
+const std::string GetMaterialTypeStr(unsigned int mat_type) {
+    switch (mat_type) {
+        case 1:
+            return "Diffuse";
+        case 2:
+            return "Specular";
+        case 3:
+            return "Ambient";
+        case 4:
+            return "Emissive";
+        case 5:
+            return "Height";
+        case 6:
+            return "Normals";
+        case 7:
+            return "Shininess";
+        case 8:
+            return "Opacity";
+        case 9:
+            return "Displacement";
+        case 10:
+            return "LightMap";
+        case 11:
+            return "Reflection";
+        default:
+            return "";
     }
 }
+}  // namespace
 
 // 参考 game/third_party/assimp/include/assimp/material.h
-GLMaterial::GLMaterial(const internal::AssimpMaterial& assimp_material, GLScene* scene) {
+GLMaterial::GLMaterial(const internal::AssimpMaterial& assimp_material,
+                       GLScene* scene) {
     aiMaterial* material = assimp_material.ptr;
     for (unsigned int mat_type_val = 1; mat_type_val <= 11; mat_type_val++) {
         aiTextureType mat_type = static_cast<aiTextureType>(mat_type_val);
@@ -319,7 +320,8 @@ const std::string GLMaterial::ToString() const {
 }
 
 /* ============================ GLSceneNode ============================ */
-GLSceneNode::GLSceneNode(const internal::AssimpSceneNode& assimp_node, GLSceneNode* parent) {
+GLSceneNode::GLSceneNode(const internal::AssimpSceneNode& assimp_node,
+                         GLSceneNode* parent) {
     aiNode* node = assimp_node.ptr;
     name_ = node->mName.C_Str();
     parent_ = parent;
@@ -354,51 +356,51 @@ GLSceneNode* GLSceneNode::FindNode(const std::string& node_name) {
     return nullptr;
 }
 
-namespace { // tools for tree print scene node
-    static const std::string PrefixMarkToStr(int mark, bool transform) {
-        if (transform) {
-            switch (mark) {
-                case 0:
-                case 1:
-                    return " |    ";
-                case 2:
-                case 3:
-                    return "      ";
-            }
-        } else {
-            switch (mark) {
-                case 0:
-                    return " |--- ";
-                case 1:
-                    return " |    ";
-                case 2:
-                    return " +--- ";
-                case 3:
-                    return "      ";
-            }
+namespace {  // tools for tree print scene node
+static const std::string PrefixMarkToStr(int mark, bool transform) {
+    if (transform) {
+        switch (mark) {
+            case 0:
+            case 1:
+                return " |    ";
+            case 2:
+            case 3:
+                return "      ";
         }
-    }
-
-    static void TreeStringImpl(const GLSceneNode* node,
-                                std::ostringstream* log,
-                                std::vector<int>* prefix) {
-        for (int i = 0; i < prefix->size(); i++) {
-            *log << PrefixMarkToStr((*prefix)[i], i != (prefix->size() - 1));
-        }
-        *log << node->ToString() << "\n";
-
-        auto children = node->GetChildren();
-        for (int i = 0; i < children.size(); i++) {
-            if (i == children.size() - 1) {
-                prefix->emplace_back(2);
-            } else {
-                prefix->emplace_back(0);
-            }
-            TreeStringImpl(&children[i], log, prefix);
-            prefix->pop_back();
+    } else {
+        switch (mark) {
+            case 0:
+                return " |--- ";
+            case 1:
+                return " |    ";
+            case 2:
+                return " +--- ";
+            case 3:
+                return "      ";
         }
     }
 }
+
+static void TreeStringImpl(const GLSceneNode* node,
+                           std::ostringstream* log,
+                           std::vector<int>* prefix) {
+    for (int i = 0; i < prefix->size(); i++) {
+        *log << PrefixMarkToStr((*prefix)[i], i != (prefix->size() - 1));
+    }
+    *log << node->ToString() << "\n";
+
+    auto children = node->GetChildren();
+    for (int i = 0; i < children.size(); i++) {
+        if (i == children.size() - 1) {
+            prefix->emplace_back(2);
+        } else {
+            prefix->emplace_back(0);
+        }
+        TreeStringImpl(&children[i], log, prefix);
+        prefix->pop_back();
+    }
+}
+}  // namespace
 
 const std::string GLSceneNode::TreeString() const {
     std::ostringstream log;
@@ -420,11 +422,9 @@ bool GLScene::Load(const std::string& path) {
                         // | aiProcess_GenSmoothNormals
                         // | aiProcess_CalcTangentSpace
       );
-    CHECK(
-        scene && 
-        !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) &&
-        scene->mRootNode
-    ) << "ASSIMP ReadFile failed: " << importer.GetErrorString();
+    CHECK(scene && !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) &&
+          scene->mRootNode)
+      << "ASSIMP ReadFile failed: " << importer.GetErrorString();
 
     VLOG(6) << "assimp ReadFile success";
 
@@ -455,7 +455,7 @@ bool GLScene::Load(const std::string& path) {
 }
 
 void GLScene::DrawMesh(unsigned int mesh_idx,
-                     const opengl::ShaderProgram& program) {
+                       const opengl::ShaderProgram& program) {
     // VLOG(6) << "DrawMesh " << mesh_idx;
     GLMesh* mesh = &meshes_[mesh_idx];
 
@@ -512,8 +512,8 @@ static void DrawSceneNode(GLSceneNode* node,
 }
 
 void GLScene::DrawNode(const std::string& node_name,
-                     const opengl::ShaderProgram& program,
-                     bool recursively) {
+                       const opengl::ShaderProgram& program,
+                       bool recursively) {
     GLSceneNode* node = FindNode(node_name);
     CHECK(node) << "DrawNode " << node_name << " but " << node_name
                 << " not exist!!";
@@ -521,8 +521,8 @@ void GLScene::DrawNode(const std::string& node_name,
 }
 
 void GLScene::DrawNode(GLSceneNode* node,
-                     const opengl::ShaderProgram& program,
-                     bool recursively) {
+                       const opengl::ShaderProgram& program,
+                       bool recursively) {
     GLSceneNode* found_node = FindNode(node->GetName());
     CHECK(found_node == node)
       << "DrawNode with pointer, but found node is not correct";
@@ -542,4 +542,4 @@ GLScene::~GLScene() {
     }
 }
 
-}  // namespace fg_scene
+}  // namespace fg::graphics::gl_scene

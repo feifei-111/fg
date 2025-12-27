@@ -2,25 +2,21 @@
 
 #include <fg/window/event.h>
 #include <fg/window/window.h>
+#include "fg/utils/log.h"
 #include "fg/window/registry.h"
 #include "fg/window/window_internal.h"
-#include "fg/utils/log.h"
-
 
 namespace fg::window::event {
 
 using WindowState = fg::window::WindowState;
 
-std::string_view EventDataName(const EventData& data){
-    return std::visit(
-        [](auto&& arg) -> std::string_view { 
-            return arg.Name();
-        },
-        data
-    );
+std::string_view EventDataName(const EventData& data) {
+    return std::visit([](auto&& arg) -> std::string_view { return arg.Name(); },
+                      data);
 }
 
-/* ============================ EventQueue Buffer ================================ */
+/* ============================ EventQueue Buffer
+ * ================================ */
 
 // 消息循环是全局的，不论有多少线程，都是用同一个消息循环、
 // 所以这个 queue 不需要锁，因为只有一个线程会去 fetch msg
@@ -42,9 +38,7 @@ private:
     bool in_prepare_ = false;
 
 public:
-    int Count() { 
-        return count_; 
-    }
+    int Count() { return count_; }
 
     // 这样要拷贝
     bool PushEvent(Event* event) {
@@ -58,8 +52,9 @@ public:
     }
 
     // 提供两个接口开控制 push，不用拷贝了
-    Event* PrepareNextEvent(unsigned int window_id){
-        CHECK(!in_prepare_) << "call PrepareNextEvent when prepare another event";
+    Event* PrepareNextEvent(unsigned int window_id) {
+        CHECK(!in_prepare_)
+          << "call PrepareNextEvent when prepare another event";
         in_prepare_ = true;
 
         // 返回 dummy，这样 window proc 那边可以简化一些
@@ -72,15 +67,14 @@ public:
         return &events_[tail_];
     }
 
-    bool PrepareEventDone(){
+    bool PrepareEventDone() {
         CHECK(in_prepare_) << "call PrepareEventDone when nothing is preparing";
         in_prepare_ = false;
-        if(!prepare_dummy_){
-            VLOG(7) << "PrepareEventDone: " 
-                    << events_[tail_].TypeStr() << ", " 
-                    << events_[tail_].window_id << ", " 
+        if (!prepare_dummy_) {
+            VLOG(7) << "PrepareEventDone: " << events_[tail_].TypeStr() << ", "
+                    << events_[tail_].window_id << ", "
                     << events_[tail_].time_stamp;
-            tail_ = (tail_ + 1) % Capacity; 
+            tail_ = (tail_ + 1) % Capacity;
             count_ += 1;
         }
         prepare_dummy_ = false;
@@ -96,9 +90,7 @@ public:
         return true;
     }
 
-    bool Empty() { 
-        return count_ == 0; 
-    }
+    bool Empty() { return count_ == 0; }
 
     void Clear() {
         head_ = 0;
@@ -114,76 +106,73 @@ static EventQueue GlobalEventQueue;
 /* ============================ Event Poll ================================ */
 
 namespace {
-    struct UpdateStateVisitor{
-        WindowState* state;
-        UpdateStateVisitor(WindowState* target_state){
-            state = target_state;
-        }
-        void operator()(MouseMoveEvent& event_data) {
-            state->mouse_x = event_data.x;
-            state->mouse_y = event_data.y;
-        }
-        void operator()(MouseClickEvent& event_data) {
-            state->mouse_x = event_data.x;
-            state->mouse_y = event_data.y;
-            switch (event_data.move) {
-                case ButtonMove::DOWN:
-                    state->button_map[size_t(
-                    event_data.button)] = true;
-                    break;
-                case ButtonMove::UP:
-                    state->button_map[size_t(
-                    event_data.button)] = false;
-                    break;
-            }
-        }
-        void operator()(MouseWheelEvent& event_data) {
-            state->mouse_x = event_data.x;
-            state->mouse_y = event_data.y;
-        }
-        void operator()(KeyBoardEvent& event_data) {
-            switch (event_data.move) {
-                case ButtonMove::DOWN:
-                    state->button_map[static_cast<unsigned int>(event_data.button)] = true;
-                    break;
-                case ButtonMove::UP:
-                    state->button_map[static_cast<unsigned int>(event_data.button)] = false;
-                    break;
-            }
-        }
-        void operator()(PaintEvent& event_data) {
-            state->width = event_data.width;
-            state->height = event_data.height;
-        }
-        // default do nothing
-        template <typename T>
-        void operator()(T& val) {}
-    };
-
-    void UpdateState(Event* event, WindowState* state) {
-        // CHECK(event->window_id == state->id) 
-        //     << "update window " << state->id 
-        //     << " with event from " << event->window_id;
-        state->time_stamp = event->time_stamp;
-        std::visit(
-            UpdateStateVisitor(state),
-            event->data
-        );
+struct UpdateStateVisitor {
+    WindowState* state;
+    UpdateStateVisitor(WindowState* target_state) { state = target_state; }
+    void operator()(MouseMoveEvent& event_data) {
+        state->mouse_x = event_data.x;
+        state->mouse_y = event_data.y;
     }
+    void operator()(MouseClickEvent& event_data) {
+        state->mouse_x = event_data.x;
+        state->mouse_y = event_data.y;
+        switch (event_data.move) {
+            case ButtonMove::DOWN:
+                state->button_map[size_t(event_data.button)] = true;
+                break;
+            case ButtonMove::UP:
+                state->button_map[size_t(event_data.button)] = false;
+                break;
+        }
+    }
+    void operator()(MouseWheelEvent& event_data) {
+        state->mouse_x = event_data.x;
+        state->mouse_y = event_data.y;
+    }
+    void operator()(KeyBoardEvent& event_data) {
+        switch (event_data.move) {
+            case ButtonMove::DOWN:
+                state
+                  ->button_map[static_cast<unsigned int>(event_data.button)] =
+                  true;
+                break;
+            case ButtonMove::UP:
+                state
+                  ->button_map[static_cast<unsigned int>(event_data.button)] =
+                  false;
+                break;
+        }
+    }
+    void operator()(PaintEvent& event_data) {
+        state->width = event_data.width;
+        state->height = event_data.height;
+    }
+    // default do nothing
+    template <typename T>
+    void operator()(T& val) {}
+};
+
+void UpdateState(Event* event, WindowState* state) {
+    // CHECK(event->window_id == state->id)
+    //     << "update window " << state->id
+    //     << " with event from " << event->window_id;
+    state->time_stamp = event->time_stamp;
+    std::visit(UpdateStateVisitor(state), event->data);
 }
+}  // namespace
 
 // win32 的消息循环以及 glfw 的 poll 都是全局的，多个窗口共用的
 // 所以这里用一个全局的设置就可以了
-void(*FetchEvent)() = nullptr;
+void (*FetchEvent)() = nullptr;
 
-void SetFetchEvent(void(*hook)()){
-    if (FetchEvent == nullptr){
+void SetFetchEvent(void (*hook)()) {
+    if (FetchEvent == nullptr) {
         FetchEvent = hook;
     }
 }
 
 // TODO @feifei-111 need fetch config
-void CollectEvents(bool clear_events){
+void CollectEvents(bool clear_events) {
     if (clear_events) {
         GlobalEventQueue.Clear();
     }
@@ -200,10 +189,13 @@ bool PollEvent(Event* event) {
     }
 }
 
-/* =================================  ======================================== */
+/* =================================  ========================================
+ */
 
 bool PushEvent(Event* event) { return GlobalEventQueue.PushEvent(event); }
-Event* PrepareNextEvent(unsigned int window_id) { return GlobalEventQueue.PrepareNextEvent(window_id); }
+Event* PrepareNextEvent(unsigned int window_id) {
+    return GlobalEventQueue.PrepareNextEvent(window_id);
+}
 bool PrepareEventDone() { return GlobalEventQueue.PrepareEventDone(); }
 
-}  // namespace fg_interact
+}  // namespace fg::window::event

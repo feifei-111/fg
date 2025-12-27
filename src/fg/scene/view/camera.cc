@@ -1,14 +1,14 @@
-#include <glm/gtc/matrix_transform.hpp>
 #include <fg/scene/view/camera.h>
+#include <glm/gtc/matrix_transform.hpp>
 
-namespace fg::scene::view{
+namespace fg::scene::view {
 
 namespace {
-    const glm::vec3& WorldUp(){
-        static const glm::vec3 world_up{0,1.0f,0};
-        return world_up;
-    }
+const glm::vec3& WorldUp() {
+    static const glm::vec3 world_up{0, 1.0f, 0};
+    return world_up;
 }
+}  // namespace
 
 void EulerAngleCamera::UpdateFront() const {
     front_.x = cos(glm::radians(yaw_)) * cos(glm::radians(pitch_));
@@ -25,8 +25,10 @@ void EulerAngleCamera::UpdateView() const {
 }
 
 void EulerAngleCamera::SetAngles(float yaw, float pitch) {
-    if (pitch > 89.0f) pitch=89.0f;
-    else if (pitch < -89.0f) pitch=-89.0f;
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    else if (pitch < -89.0f)
+        pitch = -89.0f;
     pitch_ = pitch;
     yaw_ = yaw;
     front_dirty_ = true;
@@ -34,20 +36,20 @@ void EulerAngleCamera::SetAngles(float yaw, float pitch) {
 }
 
 void EulerAngleCamera::AddAngles(float yaw_off, float pitch_off) {
-    SetAngles(yaw_ + yaw_off, pitch_+ pitch_off);
+    SetAngles(yaw_ + yaw_off, pitch_ + pitch_off);
 }
 
-void EulerAngleCamera::SetPosition(const glm::vec3& position){
+void EulerAngleCamera::SetPosition(const glm::vec3& position) {
     position_ = position;
     view_dirty_ = true;
 }
 
-void EulerAngleCamera::AddPosition(const glm::vec3& position_off){
+void EulerAngleCamera::AddPosition(const glm::vec3& position_off) {
     position_ = position_ + position_off;
     view_dirty_ = true;
 }
 
-void EulerAngleCamera::PositionForward(float len){
+void EulerAngleCamera::PositionForward(float len) {
     if (front_dirty_) UpdateFront();
     position_ = position_ + len * front_;
     view_dirty_ = true;
@@ -67,34 +69,26 @@ void EulerAngleCamera::LookAt(const glm::vec3& target) {
 }
 
 const glm::mat4& EulerAngleCamera::GetView() const {
-    if(view_dirty_) UpdateView();
+    if (view_dirty_) UpdateView();
     return view_;
 }
 
-const glm::vec3& EulerAngleCamera::GetPosition() const {
-    return position_;
-}
+const glm::vec3& EulerAngleCamera::GetPosition() const { return position_; }
 
 const glm::vec3& EulerAngleCamera::GetFront() const {
-    if(front_dirty_) UpdateFront();
+    if (front_dirty_) UpdateFront();
     return front_;
 }
 
 const glm::vec3 EulerAngleCamera::GetRight() const {
-    if(front_dirty_) UpdateFront();
+    if (front_dirty_) UpdateFront();
     return glm::normalize(glm::cross(front_, WorldUp()));
 }
 
-const glm::vec3& EulerAngleCamera::GetUp() const {
-    return WorldUp();
-}
+const glm::vec3& EulerAngleCamera::GetUp() const { return WorldUp(); }
 
-float EulerAngleCamera::GetYaw() const {
-    return yaw_;
-}
+float EulerAngleCamera::GetYaw() const { return yaw_; }
 
-float EulerAngleCamera::GetPitch() const {
-    return pitch_;
-}
+float EulerAngleCamera::GetPitch() const { return pitch_; }
 
-}
+}  // namespace fg::scene::view

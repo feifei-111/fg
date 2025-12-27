@@ -36,4 +36,4 @@ void CreateConsole() {
     SetConsoleTitle(L"FEI_console");
 }
 
-}  // namespace fg_utils
+}  // namespace fg::utils::win32

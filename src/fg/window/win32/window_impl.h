@@ -19,4 +19,4 @@ public:
     ~Win32WindowImpl();
 };
 
-}
+}  // namespace fg::window::win32

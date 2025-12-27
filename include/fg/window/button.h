@@ -4,7 +4,7 @@ namespace fg::window {
 
 enum class Button {
     // mouse part
-    MS_LBUTTON=0,
+    MS_LBUTTON = 0,
     MS_RBUTTON,
     MS_MBUTTON,
     MS_XBUTTON1,
@@ -139,6 +139,6 @@ enum class Button {
     UNKNOWN
 };
 
-enum class ButtonMove { DOWN=0, UP, DCLICK};
+enum class ButtonMove { DOWN = 0, UP, DCLICK };
 
-}  // namespace fg_interact
+}  // namespace fg::window

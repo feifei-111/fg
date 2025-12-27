@@ -5,17 +5,17 @@
 #include <string>
 #include <vector>
 
-#include "fg/graphics/opengl/gl.h"
 #include <fg/macros.h>
+#include "fg/graphics/opengl/gl.h"
 
 namespace fg::graphics::gl_scene {
 
 // 用来解除对 assimp 头文件的依赖
 namespace internal {
-    struct AssimpMesh;
-    struct AssimpMaterial;
-    struct AssimpSceneNode;
-}
+struct AssimpMesh;
+struct AssimpMaterial;
+struct AssimpSceneNode;
+}  // namespace internal
 
 struct FG_API GLScene;
 
@@ -67,7 +67,8 @@ private:
 // 我们这里 vector 不存指针，直接存 obj，会自动析构
 // chilren_，这里也不用自己写析构，就这样吧
 struct FG_API GLSceneNode {
-    GLSceneNode(const internal::AssimpSceneNode& assimp_node, GLSceneNode* parent);
+    GLSceneNode(const internal::AssimpSceneNode& assimp_node,
+                GLSceneNode* parent);
     GLSceneNode* FindNode(const std::string& node_name);
     const std::string& GetName() const { return name_; }
     const std::vector<GLSceneNode>& GetChildren() const { return children_; }
@@ -116,4 +117,4 @@ private:
     std::vector<opengl::Texture2D> embed_textures_;
 };
 
-}  // namespace fg_scene
+}  // namespace fg::graphics::gl_scene
