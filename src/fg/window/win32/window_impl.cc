@@ -39,7 +39,7 @@ Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, WindowBase* base) {
     hwnd_ = CreateWindowExW(
       0,  // style
       wc.lpszClassName,
-      window_name,
+      config.name,
       WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT,
       CW_USEDEFAULT,
@@ -73,7 +73,7 @@ Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, WindowBase* base) {
     UpdateWindow(hwnd_);  // 这个接口是让 WM_PAINT 消息提高优先级
 }
 
-Window::~Window() {
+Win32WindowImpl::~Win32WindowImpl() {
     if (hwnd_) {
         DestroyWindow(hwnd_);
     }
@@ -82,8 +82,8 @@ Window::~Window() {
 
 void Win32WindowImpl::SwapBuffer() const { SwapBuffers(hdc_); }
 
-HDC Window::GetHDC() const { return hdc_; }
-HWND Window::GetHWND() const { return hwnd_; }
+HDC Win32WindowImpl::GetHDC() const { return hdc_; }
+HWND Win32WindowImpl::GetHWND() const { return hwnd_; }
 unsigned int Win32WindowImpl::GetID() const { return window_id_; }
 
 namespace {
@@ -91,10 +91,10 @@ namespace {
 void FetchEvent() {
     float sys_dispatch_msg_limit = 0.001f;
     MSG msg;
-    float peek_begin_time = GetTime();
+    float peek_begin_time = fg::utils::GetTime();
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) &&
            GlobalEventList.Count() < GlobalEventList.Capacity &&
-           GetTime() < peek_begin_time + sys_dispatch_msg_limit) {
+           fg::utils::GetTime() < peek_begin_time + sys_dispatch_msg_limit) {
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }

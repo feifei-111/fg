@@ -44,9 +44,7 @@ target_include_directories(
 )
 
 # ====================== 依赖的 third party ======================
-find_package(assimp REQUIRED)
-find_package(glog REQUIRED)
-find_package(glm REQUIRED)
+include(cmake/dependencies.cmake)
 
 # glm 可以暴露依赖，因为可能确实要用 glm 接口
 # glm 提前编了一些模版实现，有 glm::glm 和 glm::glm-header-only 两个空间
@@ -121,7 +119,7 @@ endif()
 # ====================== build flags ======================
 add_library(build_flags INTERFACE)
 
-target_compile_features(build_flags INTERFACE cxx_std_17)
+target_compile_features(build_flags INTERFACE cxx_std_20)
 
 option(USE_VLOG "use vlog in fg" OFF)
 if (USE_VLOG)
