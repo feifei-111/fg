@@ -4,19 +4,22 @@
 
 set(THIRD_PARTY_DIR ${PROJECT_SOURCE_DIR}/third_party)
 
-# helper: 检查 submodule 目录是否已初始化
-macro(check_submodule_initialized name path)
-    if(NOT EXISTS "${path}/CMakeLists.txt")
-        message(FATAL_ERROR
-            "${name} submodule not initialized. Run:\n"
-            "  git submodule update --init --recursive")
+# helper: 按需初始化单个 submodule
+macro(ensure_submodule name path)
+    if(NOT EXISTS "${path}/.git")
+        message(STATUS "Initializing submodule: ${name}")
+        execute_process(
+            COMMAND git submodule update --init --recursive -- ${path}
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            COMMAND_ERROR_IS_FATAL ANY
+        )
     endif()
 endmacro()
 
 # helper: configure + build + install submodule 到 CMAKE_INSTALL_PREFIX
 macro(build_and_install_submodule name source_dir)
     message(STATUS "${name} not found, building from submodule")
-    check_submodule_initialized(${name} ${source_dir})
+    ensure_submodule(${name} ${source_dir})
     execute_process(
         COMMAND ${CMAKE_COMMAND} -S ${source_dir} -B ${source_dir}/build
             -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
@@ -63,3 +66,7 @@ if(NOT assimp_FOUND)
     )
     find_package(assimp REQUIRED)
 endif()
+
+# ====================== header-only submodules ======================
+ensure_submodule(stb ${THIRD_PARTY_DIR}/stb)
+ensure_submodule(whereami ${THIRD_PARTY_DIR}/whereami)

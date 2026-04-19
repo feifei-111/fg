@@ -1,24 +1,30 @@
-# Build libfg and submodules with script:
+# Build
+
+## Build with script
 ```sh
-# if you not 
-export INSTALL_PATH="~/install"
-bash scripts/submodules.sh install ${INSTALL_PATH}
-bash scripts/build.sh install ${INSTALL_PATH}
+# build only
+python scripts/build.py
+
+# build and install to custom path
+python scripts/build.py --prefix ~/install --install
+
+# enable VLOG
+python scripts/build.py --prefix ~/install --install --vlog
 ```
 
-# Build libfg with command
+## Build with command
 ```sh
-cmake -B build .
-cmake --build build -DUSE_VLOG=ON -CMAKE_VERBOSE_MAKEFILE=OFF
+cmake -B build . -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
 ```
 
-# Build Example
+## Example
 There is an example for libfg usage
 - build and install
 - create a link which can be moved and launch program in any directory
 - press `ESC` to quit
 ```sh
 cd example
-bash build.sh ${INSTALL_PATH}
+bash build.sh ~/install
 ./fg_example
 ```
