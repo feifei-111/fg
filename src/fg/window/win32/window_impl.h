@@ -22,6 +22,7 @@ public:
     HDC GetHDC() const;
     HWND GetHWND() const;
     unsigned int GetID() const;
+    bool IsReady() const { return create_window_ready_flag_; }
     ~Win32WindowImpl();
 };
 

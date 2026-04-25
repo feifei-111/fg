@@ -31,15 +31,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
       GetWindowLongPtrW(hwnd, GWLP_USERDATA));
 
     // 初始化未完成
-    if (!window_impl->create_window_ready_flag_) {
+    if (!window_impl->IsReady()) {
         switch (uMsg) {
-            case WM_NCCREATE:
+            case WM_NCCREATE: {
                 auto user_data =
                   (LONG_PTR)(((CREATESTRUCT*)lParam)->lpCreateParams);
                 CHECK(user_data)
                   << "lpParams(user data) not exist, Win32 window init failed";
                 SetWindowLongPtrW(hwnd, GWLP_USERDATA, user_data);
                 return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+            }
             default:
                 return DefWindowProcW(hwnd, uMsg, wParam, lParam);
         }

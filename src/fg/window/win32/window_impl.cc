@@ -1,12 +1,14 @@
-#include <glad/wgl.h>
 #include <fg/graphics/opengl/gl.h>
+#include <fg/utils/utils.h>
+#include <glad/wgl.h>
 
-#include "fg/window/win32/window_impl.h"
+#include "fg/utils/log.h"
+#include "fg/window/registry.h"
 #include "fg/window/win32/utils/console.h"
+#include "fg/window/win32/utils/utils.h"
+#include "fg/window/win32/window_impl.h"
 #include "fg/window/win32/window_proc.h"
 #include "fg/window/window_internal.h"
-#include "fg/window/registry.h"
-#include "fg/utils/log.h"
 
 namespace fg::window::win32 {
 namespace {
@@ -41,7 +43,7 @@ Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, WindowBase* base) {
     hwnd_ = CreateWindowExW(
       0,  // style
       wc.lpszClassName,
-      config.name,
+      utils::ToWString(config.name).c_str(),
       WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT,
       CW_USEDEFAULT,
@@ -69,7 +71,7 @@ Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, WindowBase* base) {
     reg_info.window = base;
     RegisterWindow(reg_info);
 
-    event::SetFetchEvent(FetchEvent);
+    fg::window::event::SetFetchEvent(FetchEvent);
 
     ShowWindow(hwnd_, SW_SHOW);
     UpdateWindow(hwnd_);  // 这个接口是让 WM_PAINT 消息提高优先级
@@ -91,12 +93,8 @@ unsigned int Win32WindowImpl::GetID() const { return window_id_; }
 namespace {
 
 void FetchEvent() {
-    float sys_dispatch_msg_limit = 0.001f;
     MSG msg;
-    float peek_begin_time = fg::utils::GetTime();
-    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) &&
-           GlobalEventList.Count() < GlobalEventList.Capacity &&
-           fg::utils::GetTime() < peek_begin_time + sys_dispatch_msg_limit) {
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
