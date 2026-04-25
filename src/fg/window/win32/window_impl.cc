@@ -1,6 +1,9 @@
 #include <fg/graphics/opengl/gl.h>
 #include <fg/utils/utils.h>
 #include <glad/wgl.h>
+#ifdef CreateWindow
+#undef CreateWindow
+#endif
 
 #include "fg/utils/log.h"
 #include "fg/window/registry.h"
