@@ -46,7 +46,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
         }
     }
 
-    CHECK(window_impl->GetHWND() != hwnd)
+    CHECK(window_impl->GetHWND() == hwnd)
       << "Win32Data and hwnd is not correlated!";
 
     Event* next_event = fg_event::PrepareNextEvent(window_impl->GetID());
