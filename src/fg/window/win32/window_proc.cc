@@ -30,8 +30,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
     Win32WindowImpl* window_impl = reinterpret_cast<Win32WindowImpl*>(
       GetWindowLongPtrW(hwnd, GWLP_USERDATA));
 
-    // 初始化未完成
-    if (!window_impl->IsReady()) {
+    // GWLP_USERDATA 在 WM_NCCREATE 之前还没设置，此时为空
+    if (!window_impl || !window_impl->IsReady()) {
         switch (uMsg) {
             case WM_NCCREATE: {
                 auto user_data =

@@ -60,6 +60,8 @@ Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, WindowBase* base) {
     );
     create_window_ready_flag_ = true;
 
+    CHECK(hwnd_) << "CreateWindowExW failed, error: " << GetLastError();
+
     state->height = config.height;
     state->width = config.width;
 
