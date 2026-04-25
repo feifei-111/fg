@@ -33,8 +33,12 @@ add_library(fg SHARED ${SRC_CC_FILES})
 set_target_properties(
     fg PROPERTIES
     CXX_VISIBILITY_PRESET default
-    WINDOWS_EXPORT_ALL_SYMBOLS ON
 )
+
+# glad 消费方需要 GLAD_API_CALL_EXPORT 才能 dllimport glad 符号
+if(WIN32)
+    target_compile_definitions(fg PUBLIC GLAD_API_CALL_EXPORT)
+endif()
 
 # 不用指定 install interface 的 ${CMAKE_INSTALL_INCLUDEDIR}，默认添加
 target_include_directories(
@@ -140,10 +144,11 @@ target_link_libraries(fg PUBLIC build_flags)
 add_library(export_flags INTERFACE)
 # when using glog and fg is dylib, so need define EXPORT flag (for win)
 target_compile_definitions(export_flags INTERFACE
-    FG_EXPORT 
-    GLOG_USE_GLOG_EXPORT 
-    GLOG_NO_ABBREVIATED_SEVERITIES
     FG_EXPORT
+    GLOG_USE_GLOG_EXPORT
+    GLOG_NO_ABBREVIATED_SEVERITIES
+    GLAD_API_CALL_EXPORT
+    GLAD_API_CALL_EXPORT_BUILD
 )
 # 这个私有，不应该导出
 target_link_libraries(fg PRIVATE export_flags)
