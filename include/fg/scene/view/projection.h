@@ -2,9 +2,11 @@
 
 #include <glm/glm.hpp>
 
+#include <fg/macros.h>
+
 namespace fg::scene::view {
 
-class PerspProjGenerator {
+class FG_API PerspProjGenerator {
     float fov_ = 45.0f;  // 视角
     float fov_min_, fov_max_;
     float near_ = 0.1f, far_ = 100.0f;
@@ -36,7 +38,7 @@ public:
     const float GetFov() const;
 };
 
-class OrthoProjGenerator {
+class FG_API OrthoProjGenerator {
 private:
     float near_, far_;
     float half_h_;

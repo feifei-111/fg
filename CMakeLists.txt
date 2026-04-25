@@ -33,6 +33,7 @@ add_library(fg SHARED ${SRC_CC_FILES})
 set_target_properties(
     fg PROPERTIES
     CXX_VISIBILITY_PRESET default
+    WINDOWS_EXPORT_ALL_SYMBOLS ON
 )
 
 # 不用指定 install interface 的 ${CMAKE_INSTALL_INCLUDEDIR}，默认添加

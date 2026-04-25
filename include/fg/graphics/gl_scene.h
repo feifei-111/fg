@@ -85,7 +85,7 @@ private:
     // glm::mat4 transformation_;
 };
 
-struct GLScene {
+struct FG_API GLScene {
     bool Load(const std::string& path);
     void DrawMesh(unsigned int mesh_idx, const opengl::ShaderProgram& program);
     void DrawNode(const std::string& node_name,

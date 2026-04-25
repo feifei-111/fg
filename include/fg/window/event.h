@@ -57,7 +57,7 @@ using EventData = std::variant<ExitEvent,
                                MouseWheelEvent,
                                KeyBoardEvent>;
 
-std::string_view EventDataName(const EventData& data);
+std::string_view FG_API EventDataName(const EventData& data);
 
 struct Event {
     Event() {}

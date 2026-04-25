@@ -58,6 +58,6 @@ public:
 };
 
 // 可以给个重载版本，不通过 config，直接传参数
-std::shared_ptr<WindowBase> CreateWindow(const WindowConfig& config);
+std::shared_ptr<WindowBase> FG_API CreateWindow(const WindowConfig& config);
 
 }  // namespace fg::window
