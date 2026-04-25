@@ -25,6 +25,6 @@ There is an example for libfg usage
 - press `ESC` to quit
 ```sh
 cd example
-python build.py ~/install
+python build.py --prefix ~/install
 ./fg_example
 ```
