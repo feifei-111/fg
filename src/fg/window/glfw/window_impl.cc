@@ -5,10 +5,9 @@
 
 #include <fg/window/event.h>
 #include "fg/utils/log.h"
-#include "fg/window/event_internal.h"
 #include "fg/window/glfw/window_impl.h"
+#include "fg/window/internal.h"
 #include "fg/window/registry.h"
-#include "fg/window/window_internal.h"
 
 namespace fg::window::glfw {
 

@@ -6,13 +6,12 @@
 #endif
 
 #include "fg/utils/log.h"
-#include "fg/window/event_internal.h"
+#include "fg/window/internal.h"
 #include "fg/window/registry.h"
 #include "fg/window/win32/utils/console.h"
 #include "fg/window/win32/utils/utils.h"
 #include "fg/window/win32/window_impl.h"
 #include "fg/window/win32/window_proc.h"
-#include "fg/window/window_internal.h"
 
 namespace fg::window::win32 {
 namespace {

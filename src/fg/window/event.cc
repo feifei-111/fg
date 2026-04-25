@@ -3,8 +3,8 @@
 #include <fg/window/event.h>
 #include <fg/window/window.h>
 #include "fg/utils/log.h"
+#include "fg/window/internal.h"
 #include "fg/window/registry.h"
-#include "fg/window/window_internal.h"
 
 namespace fg::window::event {
 
