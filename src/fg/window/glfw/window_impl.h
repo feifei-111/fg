@@ -16,3 +16,7 @@ public:
 };
 
 }  // namespace fg::window::glfw
+
+namespace fg::window {
+using WindowImpl = glfw::GLFWWindowImpl;
+}

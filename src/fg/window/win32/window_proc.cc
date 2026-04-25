@@ -242,10 +242,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
         case WM_SYSKEYUP:
 
         default:
-            next_event->data.emplace<fg_event::Win32Event>(
-              uMsg, wParam, lParam);
-            fg_event::PrepareEventDone();
-            return DefWindowProcW(hwnd, uMsg, wParam, lParam);  // 默认消息处理
+            return DefWindowProcW(hwnd, uMsg, wParam, lParam);
     }
 }
 namespace {

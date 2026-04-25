@@ -3,7 +3,7 @@
 #include <fg/graphics/opengl/gl.h>
 #include "fg/utils/log.h"
 #include "fg/window/registry.h"
-#include "fg/window/win32/console.h"
+#include "fg/window/win32/utils/console.h"
 #include "fg/window/win32/window_impl.h"
 #include "fg/window/win32/window_proc.h"
 #include "fg/window/window_internal.h"
@@ -15,6 +15,8 @@ void FetchEvent();
 }  // namespace
 
 Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, WindowBase* base) {
+    utils::CreateConsole();
+
     WindowState* state = GetMutableState(base);
     window_id_ = state->id;
 

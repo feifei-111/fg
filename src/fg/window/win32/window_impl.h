@@ -1,5 +1,11 @@
 #pragma once
 #include <Windows.h>
+
+// win32 的 CreateWindow 居然是个宏，在 win32 这里会报错
+#ifdef CreateWindow
+#undef CreateWindow
+#endif
+
 #include <fg/window/window.h>
 
 namespace fg::window::win32 {
@@ -20,3 +26,7 @@ public:
 };
 
 }  // namespace fg::window::win32
+
+namespace fg::window {
+using WindowImpl = win32::Win32WindowImpl;
+}

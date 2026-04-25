@@ -6,9 +6,13 @@
 
 #include <fg/utils/utils.h>
 
-namespace fg::utils::win32 {
+namespace fg::window::win32::utils {
 
 void CreateConsole() {
+    static bool created = false;
+    if (created) return;
+    created = true;
+
     AllocConsole();
 
     HANDLE hStdHandle;
@@ -36,4 +40,4 @@ void CreateConsole() {
     SetConsoleTitle(L"FEI_console");
 }
 
-}  // namespace fg::utils::win32
+}  // namespace fg::window::win32::utils

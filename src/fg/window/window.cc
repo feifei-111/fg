@@ -1,7 +1,9 @@
 #ifdef _WIN32
 #include "fg/window/win32/window_impl.h"
-#elifdef __APPLE__
+#elif defined(__APPLE__)
 #include "fg/window/glfw/window_impl.h"
+#else
+#error "Unsupported platform"
 #endif
 
 #include <fg/utils/utils.h>
@@ -25,13 +27,7 @@ unsigned int WindowBase::GetNewWindowID() { return GetNewWindowIDImpl(); }
 WindowState* GetMutableState(WindowBase* window) { return &(window->state_); }
 
 std::shared_ptr<WindowBase> CreateWindow(const WindowConfig& config) {
-#ifdef _WIN32
-    return std::make_shared<Window<win32::Win32Window>>(config);
-#elifdef __APPLE__
-    return std::make_shared<Window<glfw::GLFWWindowImpl>>(config);
-#else
-    CHECK(false) << "Platform Not Supported";
-#endif
+    return std::make_shared<Window<WindowImpl>>(config);
 }
 
 }  // namespace fg::window
