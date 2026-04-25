@@ -6,6 +6,7 @@
 #endif
 
 #include "fg/utils/log.h"
+#include "fg/window/event_internal.h"
 #include "fg/window/registry.h"
 #include "fg/window/win32/utils/console.h"
 #include "fg/window/win32/utils/utils.h"
