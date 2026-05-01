@@ -2,17 +2,21 @@
 
 #include <fg/window/event.h>
 #include <fg/window/window.h>
+#include <functional>
+#include <type_traits>
 #include "fg/utils/log.h"
 #include "fg/window/internal.h"
-#include "fg/window/registry.h"
 
 namespace fg::window::event {
 
 using WindowState = fg::window::WindowState;
 
 std::string_view EventDataName(const EventData& data) {
-    return std::visit([](auto&& arg) -> std::string_view { return arg.Name(); },
-                      data);
+    return std::visit(
+      [](auto&& arg) -> std::string_view {
+          return std::decay_t<decltype(arg)>::Name();
+      },
+      data);
 }
 
 /* =========================== EventQueue Buffer =========================== */
@@ -29,61 +33,40 @@ private:
     unsigned int count_ = 0;
     Event events_[Capacity];
 
-    // 如果 queue 满了，就放到这个 Event，这样就不用返回 optional 了
-    Event dummy_;
-    bool prepare_dummy_ = false;
-
-    // 确保成对使用接口
-    bool in_prepare_ = false;
+    bool in_prepare_event_ = false;
 
 public:
     int Count() { return count_; }
 
-    // 这样要拷贝
-    bool PushEvent(Event* event) {
-        if (count_ == Capacity) {
-            return false;
-        }
-        events_[tail_] = *event;
-        tail_ = (tail_ + 1) % Capacity;
-        count_ += 1;
-        return true;
-    }
-
     // 提供两个接口开控制 push，不用拷贝了
-    Event* PrepareNextEvent(unsigned int window_id) {
-        CHECK(!in_prepare_)
-          << "call PrepareNextEvent when prepare another event";
-        in_prepare_ = true;
-
-        // 返回 dummy，这样 window proc 那边可以简化一些
+    EventData* PrepareNextEventData(unsigned int window_id) {
+        CHECK(!in_prepare_event_)
+          << "prepare another event when last one not finished";
         if (count_ == Capacity) {
-            prepare_dummy_ = true;
-            return &dummy_;
+            return nullptr;
         }
         events_[tail_].window_id = window_id;
         events_[tail_].time_stamp = fg::utils::GetTime();
-        return &events_[tail_];
+        in_prepare_event_ = true;
+        return &(events_[tail_].data);
     }
 
-    bool PrepareEventDone() {
-        CHECK(in_prepare_) << "call PrepareEventDone when nothing is preparing";
-        in_prepare_ = false;
-        if (!prepare_dummy_) {
-            VLOG(7) << "PrepareEventDone: " << events_[tail_].TypeStr() << ", "
-                    << events_[tail_].window_id << ", "
-                    << events_[tail_].time_stamp;
-            tail_ = (tail_ + 1) % Capacity;
-            count_ += 1;
-        }
-        prepare_dummy_ = false;
+    void PrepareEventDataDone() {
+        CHECK(in_prepare_event_)
+          << "try finish a event when no event is preparing";
+        VLOG(7) << "PrepareEventDataDone: " << events_[tail_].TypeStr() << ", "
+                << events_[tail_].window_id << ", "
+                << events_[tail_].time_stamp;
+        tail_ = (tail_ + 1) % Capacity;
+        count_ += 1;
+        in_prepare_event_ = false;
     }
 
-    bool PopHeadEvent(Event* event) {
+    bool PopHeadEvent(Event& event) {
         if (count_ == 0) {
             return false;
         }
-        *event = events_[head_];
+        event = events_[head_];
         head_ = (head_ + 1) % Capacity;
         count_ -= 1;
         return true;
@@ -95,8 +78,7 @@ public:
         head_ = 0;
         tail_ = 0;
         count_ = 0;
-        prepare_dummy_ = false;
-        in_prepare_ = false;
+        in_prepare_event_ = false;
     }
 };
 
@@ -106,57 +88,52 @@ static EventQueue GlobalEventQueue;
 
 namespace {
 struct UpdateStateVisitor {
-    WindowState* state;
-    UpdateStateVisitor(WindowState* target_state) { state = target_state; }
+    WindowState& state;
+    UpdateStateVisitor(WindowState& target_state) : state(target_state) {}
     void operator()(MouseMoveEvent& event_data) {
-        state->mouse_x = event_data.x;
-        state->mouse_y = event_data.y;
+        state.mouse_x = event_data.x;
+        state.mouse_y = event_data.y;
     }
     void operator()(MouseClickEvent& event_data) {
-        state->mouse_x = event_data.x;
-        state->mouse_y = event_data.y;
+        state.mouse_x = event_data.x;
+        state.mouse_y = event_data.y;
         switch (event_data.move) {
             case ButtonMove::DOWN:
-                state->button_map[size_t(event_data.button)] = true;
+                state.button_map[size_t(event_data.button)] = true;
                 break;
             case ButtonMove::UP:
-                state->button_map[size_t(event_data.button)] = false;
+                state.button_map[size_t(event_data.button)] = false;
                 break;
         }
     }
     void operator()(MouseWheelEvent& event_data) {
-        state->mouse_x = event_data.x;
-        state->mouse_y = event_data.y;
+        state.mouse_x = event_data.x;
+        state.mouse_y = event_data.y;
     }
     void operator()(KeyBoardEvent& event_data) {
         switch (event_data.move) {
             case ButtonMove::DOWN:
-                state
-                  ->button_map[static_cast<unsigned int>(event_data.button)] =
+                state.button_map[static_cast<unsigned int>(event_data.button)] =
                   true;
                 break;
             case ButtonMove::UP:
-                state
-                  ->button_map[static_cast<unsigned int>(event_data.button)] =
+                state.button_map[static_cast<unsigned int>(event_data.button)] =
                   false;
                 break;
         }
     }
     void operator()(PaintEvent& event_data) {
-        state->width = event_data.width;
-        state->height = event_data.height;
+        state.width = event_data.width;
+        state.height = event_data.height;
     }
     // default do nothing
     template <typename T>
     void operator()(T& val) {}
 };
 
-void UpdateState(Event* event, WindowState* state) {
-    // CHECK(event->window_id == state->id)
-    //     << "update window " << state->id
-    //     << " with event from " << event->window_id;
-    state->time_stamp = event->time_stamp;
-    std::visit(UpdateStateVisitor(state), event->data);
+void UpdateState(Event& event, WindowState& state) {
+    state.time_stamp = event.time_stamp;
+    std::visit(UpdateStateVisitor(state), event.data);
 }
 }  // namespace
 
@@ -164,13 +141,12 @@ void UpdateState(Event* event, WindowState* state) {
 // 所以这里用一个全局的设置就可以了
 void (*FetchEvent)() = nullptr;
 
-void SetFetchEvent(void (*hook)()) {
+void SetFetchEventHook(void (*hook)()) {
     if (FetchEvent == nullptr) {
         FetchEvent = hook;
     }
 }
 
-// TODO @feifei-111 need fetch config
 void CollectEvents(bool clear_events) {
     if (clear_events) {
         GlobalEventQueue.Clear();
@@ -178,9 +154,9 @@ void CollectEvents(bool clear_events) {
     FetchEvent();
 }
 
-bool PollEvent(Event* event) {
+bool PollEvent(Event& event) {
     if (GlobalEventQueue.PopHeadEvent(event)) {
-        WindowBase* window = GetRegisteredWindowPtr(event->window_id);
+        std::weak_ptr<Window> window = GetRegisteredWindowPtr(event.window_id);
         UpdateState(event, GetMutableState(window));
         return true;
     } else {
@@ -188,12 +164,12 @@ bool PollEvent(Event* event) {
     }
 }
 
-/* ============================ Event Push ================================= */
-
-bool PushEvent(Event* event) { return GlobalEventQueue.PushEvent(event); }
-Event* PrepareNextEvent(unsigned int window_id) {
-    return GlobalEventQueue.PrepareNextEvent(window_id);
+/* ======================= Emplace Event Tool =========================== */
+namespace detail {
+EventData* PrepareNextEventData(unsigned int window_id) {
+    return GlobalEventQueue.PrepareNextEventData(window_id);
 }
-bool PrepareEventDone() { return GlobalEventQueue.PrepareEventDone(); }
+void PrepareEventDataDone() { return GlobalEventQueue.PrepareEventDataDone(); }
+}  // namespace detail
 
 }  // namespace fg::window::event

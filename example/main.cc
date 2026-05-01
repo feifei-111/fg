@@ -19,8 +19,8 @@ int main(){
 
     // 2. Prepare opengl data for rendering
     fgi::ShaderProgram program(
-        fgi::GetRuntimeAbsPath("./assets/vertex_shader.glsl"), 
-        fgi::GetRuntimeAbsPath("./assets/fragment_shader.glsl"));
+        fgi::AbsPath("./assets/vertex_shader.glsl"), 
+        fgi::AbsPath("./assets/fragment_shader.glsl"));
     std::cout << program.Ready() << std::endl;
 
     fgi::VAO vao(true/*do init*/);
@@ -40,7 +40,7 @@ int main(){
     while(true){
         // process event
         fgi::CollectEvents();
-        while(fgi::PollEvent(&event)){
+        while(fgi::PollEvent(event)){
             std::cout << "Main Loop Get Event: " << event.TypeStr() << std::endl;
             if (
                 std::holds_alternative<fgi::ExitEvent>(event.data) ||

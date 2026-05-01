@@ -25,39 +25,37 @@ struct WindowConfig {
     bool show_mouse = true;
 };
 
-class WindowBase {
+class Window {
     static unsigned int GetNewWindowID();
+
+public:
+    struct WindowImpl;
+
+private:
+    std::unique_ptr<WindowImpl> impl_;
 
 protected:
     WindowState state_;
 
 public:
-    WindowBase() { state_.id = GetNewWindowID(); };
+    struct WindowImpl;
+    Window(const WindowConfig& config);
 
-    WindowBase(const WindowBase&) = delete;
-    WindowBase& operator=(const WindowBase&) = delete;
+    Window(const Window&) = delete;
+    Window& operator=(const Window&) = delete;
 
-    WindowBase(WindowBase&&) = default;
-    WindowBase& operator=(WindowBase&&) = default;
+    Window(Window&&) = default;
+    Window& operator=(Window&&) = default;
 
     unsigned int GetID() const { return state_.id; }
     const WindowState* GetState() const { return &state_; }
-    virtual void SwapBuffer() const = 0;
+    void SwapBuffer() const;
 
 private:
-    friend WindowState* GetMutableState(WindowBase*);
-};
-
-template <typename WindowImpl>
-class Window : public WindowBase {
-    WindowImpl impl_;
-
-public:
-    Window(const WindowConfig& config) : impl_(config, this) {}
-    void SwapBuffer() const override { impl_.SwapBuffer(); }
+    friend WindowState& GetMutableState(std::weak_ptr<Window> window);
 };
 
 // 可以给个重载版本，不通过 config，直接传参数
-std::shared_ptr<WindowBase> FG_API CreateWindow(const WindowConfig& config);
+std::shared_ptr<Window> FG_API CreateWindow(const WindowConfig& config);
 
 }  // namespace fg::window

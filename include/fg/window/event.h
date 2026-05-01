@@ -14,19 +14,19 @@ using ButtonMove = fg::window::ButtonMove;
 
 // 不需要额外信息
 struct ExitEvent {
-    std::string_view Name() const { return "ExitEvent"; }
+    static std::string_view Name() { return "ExitEvent"; }
 };
 
 struct PaintEvent {
     int width;
     int height;
-    std::string_view Name() const { return "PaintEvent"; }
+    static std::string_view Name() { return "PaintEvent"; }
 };
 
 struct MouseMoveEvent {
     int x;
     int y;
-    std::string_view Name() const { return "MouseMoveEvent"; }
+    static std::string_view Name() { return "MouseMoveEvent"; }
 };
 
 struct MouseClickEvent {
@@ -34,20 +34,20 @@ struct MouseClickEvent {
     ButtonMove move;
     int x;
     int y;
-    std::string_view Name() const { return "MouseClickEvent"; }
+    static std::string_view Name() { return "MouseClickEvent"; }
 };
 
 struct MouseWheelEvent {
     int wheel_delta;
     int x;
     int y;
-    std::string_view Name() const { return "MouseWheelEvent"; }
+    static std::string_view Name() { return "MouseWheelEvent"; }
 };
 
 struct KeyBoardEvent {
     Button button;
     ButtonMove move;
-    std::string_view Name() const { return "KeyBoardEvent"; }
+    static std::string_view Name() { return "KeyBoardEvent"; }
 };
 
 using EventData = std::variant<ExitEvent,
@@ -77,6 +77,6 @@ struct Event {
 };
 
 void FG_API CollectEvents(bool clear_events = true);
-bool FG_API PollEvent(Event* event);
+bool FG_API PollEvent(Event& event);
 
 }  // namespace fg::window::event

@@ -8,8 +8,13 @@
 
 #include <fg/utils/utils.h>
 #include <fg/window/window.h>
+#include "fg/window/internal.h"
 
 namespace fg::window {
+
+WindowState& GetMutableState(std::weak_ptr<Window> window) {
+    return window.lock()->state_;
+}
 
 namespace {
 // 对于 inline 函数，在链接时会自动只保留一份，其他舍弃
@@ -22,12 +27,23 @@ unsigned int GetNewWindowIDImpl() {
 }
 }  // namespace
 
-unsigned int WindowBase::GetNewWindowID() { return GetNewWindowIDImpl(); }
+unsigned int Window::GetNewWindowID() { return GetNewWindowIDImpl(); }
 
-WindowState* GetMutableState(WindowBase* window) { return &(window->state_); }
+Window::Window(const WindowConfig& config) {
+    impl_ = std::make_unique<WindowImpl>(config);
+    unsigned int window_id = impl_->GetID();
+    state_.id = window_id;
+    state_.height = config.height;
+    state_.width = config.width;
+}
 
-std::shared_ptr<WindowBase> CreateWindow(const WindowConfig& config) {
-    return std::make_shared<Window<WindowImpl>>(config);
+void Window::SwapBuffer() const { impl_->SwapBuffer(); }
+
+std::shared_ptr<Window> CreateWindow(const WindowConfig& config) {
+    auto window = std::make_shared<Window>(config);
+    WindowRegisterInfo reg_info{window->GetID(), window};
+    RegisterWindow(reg_info);
+    return window;
 }
 
 }  // namespace fg::window

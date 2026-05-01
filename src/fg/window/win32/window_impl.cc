@@ -7,9 +7,8 @@
 
 #include "fg/utils/log.h"
 #include "fg/window/internal.h"
-#include "fg/window/registry.h"
+#include "fg/window/win32/utils.h"
 #include "fg/window/win32/utils/console.h"
-#include "fg/window/win32/utils/utils.h"
 #include "fg/window/win32/window_impl.h"
 #include "fg/window/win32/window_proc.h"
 
@@ -19,11 +18,9 @@ bool GLInit(HWND hwnd, HDC hdc);
 void FetchEvent();
 }  // namespace
 
-Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, WindowBase* base) {
+Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, Window* base) {
+    window_id_ = Window::GetNewWindowID();
     utils::CreateConsole();
-
-    WindowState* state = GetMutableState(base);
-    window_id_ = state->id;
 
     HINSTANCE hInstance = GetModuleHandleW(NULL);
     const wchar_t class_name[] = L"WindowClass";
@@ -36,11 +33,7 @@ Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, WindowBase* base) {
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);       // 默认光标
     wc.style = CS_DBLCLKS;
 
-    if (!RegisterClassW(&wc)) {
-        MessageBoxW(
-          NULL, L"register class window error", L"Error", MB_ICONERROR);
-        exit(1);
-    }
+    CHECK(RegisterClassW(&wc)) << "register class window failed";
 
     create_window_ready_flag_ = false;
     hwnd_ = CreateWindowExW(
@@ -61,9 +54,6 @@ Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, WindowBase* base) {
 
     CHECK(hwnd_) << "CreateWindowExW failed, error: " << GetLastError();
 
-    state->height = config.height;
-    state->width = config.width;
-
     // 获取窗口 hdc，记得 release (这个操作在 window proc)
     hdc_ = GetDC(hwnd_);
 
@@ -71,12 +61,7 @@ Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, WindowBase* base) {
         MessageBoxW(NULL, L"GLinit error", L"Error", MB_ICONERROR);
     }
 
-    WindowRegisterInfo reg_info;
-    reg_info.id = window_id_;
-    reg_info.window = base;
-    RegisterWindow(reg_info);
-
-    fg::window::event::SetFetchEvent(FetchEvent);
+    fg::window::event::SetFetchEventHook(FetchEvent);
 
     ShowWindow(hwnd_, SW_SHOW);
     UpdateWindow(hwnd_);  // 这个接口是让 WM_PAINT 消息提高优先级
@@ -88,12 +73,6 @@ Win32WindowImpl::~Win32WindowImpl() {
     }
     UnregisterWindow(window_id_);
 }
-
-void Win32WindowImpl::SwapBuffer() const { SwapBuffers(hdc_); }
-
-HDC Win32WindowImpl::GetHDC() const { return hdc_; }
-HWND Win32WindowImpl::GetHWND() const { return hwnd_; }
-unsigned int Win32WindowImpl::GetID() const { return window_id_; }
 
 namespace {
 

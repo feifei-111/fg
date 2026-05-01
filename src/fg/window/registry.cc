@@ -1,8 +1,7 @@
-
 #include <unordered_map>
 
 #include "fg/utils/log.h"
-#include "fg/window/registry.h"
+#include "fg/window/internal.h"
 
 namespace fg::window {
 // 在 poll event 时，需要更新 window state
@@ -20,7 +19,7 @@ void UnregisterWindow(unsigned int window_id) {
     GlobalWindowRegisterMap.erase(window_id);
 }
 
-WindowBase* GetRegisteredWindowPtr(unsigned int window_id) {
+std::weak_ptr<Window> GetRegisteredWindowPtr(unsigned int window_id) {
     CHECK(GlobalWindowRegisterMap.find(window_id) !=
           GlobalWindowRegisterMap.end())
       << "window_id " << window_id << " not found";

@@ -2,21 +2,17 @@
 #include <GLFW/glfw3.h>
 #include <fg/window/window.h>
 
-namespace fg::window::glfw {
+namespace fg::window {
 
-class GLFWWindowImpl {
+class Window::WindowImpl {
     unsigned int window_id_;
     GLFWwindow* window_;
 
 public:
-    GLFWWindowImpl(const WindowConfig& config, WindowBase* base);
-    void SwapBuffer() const;
-    unsigned int GetID() const;
-    ~GLFWWindowImpl();
+    WindowImpl(const WindowConfig& config);
+    void SwapBuffer() const { glfwSwapBuffers(window_); }
+    unsigned int GetID() const { return window_id_; }
+    ~WindowImpl();
 };
 
-}  // namespace fg::window::glfw
-
-namespace fg::window {
-using WindowImpl = glfw::GLFWWindowImpl;
-}
+}  // namespace fg::window

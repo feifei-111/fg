@@ -32,7 +32,7 @@ using fg::window::WindowState;
 using fg::scene::view::EulerAngleCamera;
 using fg::scene::view::PerspProjGenerator;
 
-using fg::utils::GetRuntimeAbsPath;
+using fg::utils::AbsPath;
 using fg::utils::GetTime;
 using fg::utils::ToString;
 

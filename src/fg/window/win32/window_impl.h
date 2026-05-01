@@ -8,26 +8,22 @@
 
 #include <fg/window/window.h>
 
-namespace fg::window::win32 {
+namespace fg::window {
 
-class Win32WindowImpl {
+class Window::WindowImpl {
     HWND hwnd_;
     HDC hdc_;
     unsigned int window_id_;
     bool create_window_ready_flag_;
 
 public:
-    Win32WindowImpl(const WindowConfig& config, WindowBase* base);
-    void SwapBuffer() const;
-    HDC GetHDC() const;
-    HWND GetHWND() const;
-    unsigned int GetID() const;
+    WindowImpl(const WindowConfig& config);
+    ~WindowImpl();
+    void SwapBuffer() const { SwapBuffers(hdc_); }
+    HDC GetHDC() const { return hdc_; }
+    HWND GetHWND() const { return hwnd_; }
+    unsigned int GetID() const { return window_id_; }
     bool IsReady() const { return create_window_ready_flag_; }
-    ~Win32WindowImpl();
 };
 
-}  // namespace fg::window::win32
-
-namespace fg::window {
-using WindowImpl = win32::Win32WindowImpl;
-}
+}  // namespace fg::window
