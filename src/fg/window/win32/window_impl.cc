@@ -12,13 +12,13 @@
 #include "fg/window/win32/window_impl.h"
 #include "fg/window/win32/window_proc.h"
 
-namespace fg::window::win32 {
+namespace fg::window {
 namespace {
 bool GLInit(HWND hwnd, HDC hdc);
 void FetchEvent();
 }  // namespace
 
-Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, Window* base) {
+Window::WindowImpl::WindowImpl(const WindowConfig& config, Window* base) {
     window_id_ = Window::GetNewWindowID();
     utils::CreateConsole();
 
@@ -27,7 +27,7 @@ Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, Window* base) {
     WNDCLASSW wc = {};
 
     wc.hInstance = hInstance;
-    wc.lpfnWndProc = WindowProc;
+    wc.lpfnWndProc = win32::WindowProc;
     wc.lpszClassName = class_name;
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);  // 默认背景色
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);       // 默认光标
@@ -48,7 +48,7 @@ Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, Window* base) {
       NULL,  // 没有 parent
       NULL,  // 暂时没有 menu
       hInstance,
-      this  // 直接传入 Win32WindowImpl* 就行了，主要是为了处理退出逻辑
+      this  // 直接传入 WindowImpl* 就行了，主要是为了处理退出逻辑
     );
     create_window_ready_flag_ = true;
 
@@ -57,24 +57,22 @@ Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, Window* base) {
     // 获取窗口 hdc，记得 release (这个操作在 window proc)
     hdc_ = GetDC(hwnd_);
 
-    if (!GLInit(hwnd_, hdc_)) {
-        MessageBoxW(NULL, L"GLinit error", L"Error", MB_ICONERROR);
-    }
+    CHECK(win32::GLInit(hwnd_, hdc_)) << "OpenGL init failed";
 
-    fg::window::event::SetFetchEventHook(FetchEvent);
+    fg::window::event::SetFetchEventHook(win32::FetchEvent);
 
     ShowWindow(hwnd_, SW_SHOW);
     UpdateWindow(hwnd_);  // 这个接口是让 WM_PAINT 消息提高优先级
 }
 
-Win32WindowImpl::~Win32WindowImpl() {
+Window::WindowImpl::~WindowImpl() {
     if (hwnd_) {
         DestroyWindow(hwnd_);
     }
     UnregisterWindow(window_id_);
 }
 
-namespace {
+namespace win32 {
 
 void FetchEvent() {
     MSG msg;
@@ -193,6 +191,6 @@ bool GLInit(HWND hwnd, HDC hdc) {
 
     return true;
 }
-}  // namespace
+}  // namespace win32
 
-}  // namespace fg::window::win32
+}  // namespace fg::window

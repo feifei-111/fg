@@ -14,7 +14,7 @@ namespace fg_event = fg::window::event;
 using Button = fg::window::Button;
 using ButtonMove = fg::window::ButtonMove;
 
-namespace {
+namespace glfw {
 void FetchEvent();
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos);
@@ -25,7 +25,7 @@ void MouseButtonCallback(GLFWwindow* window,
 void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void KeyBoardCallback(
   GLFWwindow* window, int key, int scancode, int action, int mods);
-}  // namespace
+}  // namespace glfw
 
 Window::WindowImpl::WindowImpl(const WindowConfig& config) {
     window_id_ = Window::GetNewWindowID();
@@ -53,11 +53,11 @@ Window::WindowImpl::WindowImpl(const WindowConfig& config) {
         exit(1);
     }
     glfwMakeContextCurrent(window_);
-    glfwSetFramebufferSizeCallback(window_, FramebufferSizeCallback);
-    glfwSetCursorPosCallback(window_, MouseMoveCallback);
-    glfwSetMouseButtonCallback(window_, MouseButtonCallback);
-    glfwSetScrollCallback(window_, ScrollCallback);
-    glfwSetKeyCallback(window_, KeyBoardCallback);
+    glfwSetFramebufferSizeCallback(window_, glfw::FramebufferSizeCallback);
+    glfwSetCursorPosCallback(window_, glfw::MouseMoveCallback);
+    glfwSetMouseButtonCallback(window_, glfw::MouseButtonCallback);
+    glfwSetScrollCallback(window_, glfw::ScrollCallback);
+    glfwSetKeyCallback(window_, glfw::KeyBoardCallback);
 
     // not show mouse
     if (!config.show_mouse) {
@@ -68,7 +68,7 @@ Window::WindowImpl::WindowImpl(const WindowConfig& config) {
     // ---------------------------------------
     CHECK(gladLoaderLoadGL()) << "glad init failed";
 
-    event::SetFetchEventHook(FetchEvent);
+    event::SetFetchEventHook(glfw::FetchEvent);
 
     glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 }
@@ -78,7 +78,7 @@ Window::WindowImpl::~WindowImpl() {
     UnregisterWindow(window_id_);
 }
 
-namespace {
+namespace glfw {
 void FetchEvent() { glfwPollEvents(); }
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
@@ -453,6 +453,6 @@ void KeyBoardCallback(
     fg_event::EmplaceEvent<fg_event::KeyBoardEvent>(
       window_impl->GetID(), button, move);
 }
-}  // namespace
+}  // namespace glfw
 
 }  // namespace fg::window
