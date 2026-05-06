@@ -13,10 +13,10 @@
 #include "fg/window/win32/window_proc.h"
 
 namespace fg::window {
-namespace {
+namespace win32 {
 bool GLInit(HWND hwnd, HDC hdc);
 void FetchEvent();
-}  // namespace
+}  // namespace win32
 
 Window::WindowImpl::WindowImpl(const WindowConfig& config, Window* base) {
     window_id_ = Window::GetNewWindowID();
