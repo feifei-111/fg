@@ -30,11 +30,13 @@ def main():
 
     # Configure & Build
     subprocess.run(
-        ["cmake", ".", "-B", "build", f"-DCMAKE_PREFIX_PATH={args.prefix}"],
+        ["cmake", ".", "-B", "build",
+         f"-DCMAKE_PREFIX_PATH={args.prefix}",
+         "-DCMAKE_BUILD_TYPE=Release"],
         cwd=script_dir, check=True)
 
     subprocess.run(
-        ["cmake", "--build", "build", "--target", "install"],
+        ["cmake", "--build", "build", "--config", "Release", "--target", "install"],
         cwd=script_dir, check=True)
 
     # Link / Copy executable
