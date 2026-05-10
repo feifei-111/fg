@@ -8,7 +8,6 @@
 #include "fg/utils/log.h"
 #include "fg/window/internal.h"
 #include "fg/window/win32/utils.h"
-#include "fg/window/win32/utils/console.h"
 #include "fg/window/win32/window_impl.h"
 #include "fg/window/win32/window_proc.h"
 
