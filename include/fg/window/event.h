@@ -57,7 +57,7 @@ using EventData = std::variant<ExitEvent,
                                MouseWheelEvent,
                                KeyBoardEvent>;
 
-std::string_view FG_API EventDataName(const EventData& data);
+FG_API std::string_view EventDataName(const EventData& data);
 
 struct Event {
     Event() {}
@@ -76,7 +76,7 @@ struct Event {
     EventData data;
 };
 
-void FG_API CollectEvents(bool clear_events = true);
-bool FG_API PollEvent(Event& event);
+FG_API void CollectEvents(bool clear_events = true);
+FG_API bool PollEvent(Event& event);
 
 }  // namespace fg::window::event

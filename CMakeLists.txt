@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.28.0)
 include(GNUInstallDirs)
 
+# 统一所有 target 使用动态 CRT (/MD)，避免跨 DLL 边界的 ABI 不一致
+cmake_policy(SET CMP0091 NEW)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+
 project(fg_lib)
 
 # 设置产物默认路径，这个设置需要放在 project 之后

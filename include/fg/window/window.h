@@ -25,7 +25,7 @@ struct FG_API WindowConfig {
     bool show_mouse = true;
 };
 
-class Window {
+class FG_API Window {
     static unsigned int GetNewWindowID();
 
 public:
@@ -57,6 +57,6 @@ private:
 };
 
 // 可以给个重载版本，不通过 config，直接传参数
-std::shared_ptr<Window> FG_API CreateWindow(const WindowConfig& config);
+FG_API std::shared_ptr<Window> CreateWindow(const WindowConfig& config);
 
 }  // namespace fg::window

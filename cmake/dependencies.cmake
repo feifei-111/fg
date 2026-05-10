@@ -24,6 +24,8 @@ macro(build_and_install_submodule name source_dir)
         COMMAND ${CMAKE_COMMAND} -S ${source_dir} -B ${source_dir}/build
             -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
             -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL
+            -DCMAKE_POLICY_DEFAULT_CMP0091=NEW
             ${ARGN}
         COMMAND_ERROR_IS_FATAL ANY
     )
