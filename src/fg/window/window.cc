@@ -29,6 +29,8 @@ unsigned int GetNewWindowIDImpl() {
 
 unsigned int Window::GetNewWindowID() { return GetNewWindowIDImpl(); }
 
+Window::~Window() = default;
+
 Window::Window(const WindowConfig& config) {
     impl_ = std::make_unique<WindowImpl>(config);
     unsigned int window_id = impl_->GetID();

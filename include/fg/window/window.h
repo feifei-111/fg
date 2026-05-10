@@ -41,11 +41,12 @@ public:
     struct WindowImpl;
     Window(const WindowConfig& config);
 
+    ~Window();
+
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
-
-    Window(Window&&) = default;
-    Window& operator=(Window&&) = default;
+    Window(Window&&) = delete;
+    Window& operator=(Window&&) = delete;
 
     unsigned int GetID() const { return state_.id; }
     const WindowState* GetState() const { return &state_; }
