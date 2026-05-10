@@ -18,9 +18,9 @@ def main():
 
     # Clean
     if platform.system() == "Windows":
-        exe = executable + ".exe"
-        if os.path.exists(exe):
-            os.remove(exe)
+        lnk = os.path.join(script_dir, "fg_example.lnk")
+        if os.path.exists(lnk):
+            os.remove(lnk)
     else:
         if os.path.exists(executable):
             os.remove(executable)
@@ -42,9 +42,15 @@ def main():
     # Link / Copy executable
     installed_exe = os.path.join(install_dir, "fg_example")
     if platform.system() == "Windows":
-        installed_exe += ".exe"
-        executable += ".exe"
-        shutil.copy2(installed_exe, executable)
+        lnk_path = os.path.join(script_dir, "fg_example.lnk")
+        if os.path.exists(lnk_path):
+            os.remove(lnk_path)
+        import win32com.client
+        shell = win32com.client.Dispatch("WScript.Shell")
+        shortcut = shell.CreateShortCut(lnk_path)
+        shortcut.Targetpath = installed_exe + ".exe"
+        shortcut.WorkingDirectory = install_dir
+        shortcut.save()
     else:
         os.symlink(installed_exe, executable)
 
