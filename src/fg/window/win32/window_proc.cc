@@ -13,6 +13,7 @@ namespace fg::window::win32 {
 namespace fg_event = fg::window::event;
 using Button = fg::window::Button;
 using ButtonMove = fg::window::ButtonMove;
+using WindowImpl = fg::window::Window::WindowImpl;
 
 namespace {
 
@@ -26,7 +27,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
     VLOG(9) << "WindowProc GetMsg: " << uMsg << ", " << wParam << ", "
             << lParam;
 
-    Win32WindowImpl* window_impl = reinterpret_cast<Win32WindowImpl*>(
+    WindowImpl* window_impl = reinterpret_cast<WindowImpl*>(
       GetWindowLongPtrW(hwnd, GWLP_USERDATA));
 
     // GWLP_USERDATA 在 WM_NCCREATE 之前还没设置，此时为空
