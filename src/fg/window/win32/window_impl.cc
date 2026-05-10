@@ -17,9 +17,9 @@ bool GLInit(HWND hwnd, HDC hdc);
 void FetchEvent();
 }  // namespace win32
 
-Window::WindowImpl::WindowImpl(const WindowConfig& config, Window* base) {
+Window::WindowImpl::WindowImpl(const WindowConfig& config) {
     window_id_ = Window::GetNewWindowID();
-    utils::CreateConsole();
+    win32::utils::CreateConsole();
 
     HINSTANCE hInstance = GetModuleHandleW(NULL);
     const wchar_t class_name[] = L"WindowClass";
@@ -38,7 +38,7 @@ Window::WindowImpl::WindowImpl(const WindowConfig& config, Window* base) {
     hwnd_ = CreateWindowExW(
       0,  // style
       wc.lpszClassName,
-      utils::ToWString(config.name).c_str(),
+      win32::utils::ToWString(config.name).c_str(),
       WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT,
       CW_USEDEFAULT,

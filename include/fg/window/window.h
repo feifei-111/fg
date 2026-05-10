@@ -7,7 +7,7 @@
 
 namespace fg::window {
 
-struct WindowState {
+struct FG_API WindowState {
     unsigned int id;
     int height;
     int width;
@@ -18,7 +18,7 @@ struct WindowState {
     int mouse_y;
 };
 
-struct WindowConfig {
+struct FG_API WindowConfig {
     int width = 800;
     int height = 600;
     const char* name = "";
