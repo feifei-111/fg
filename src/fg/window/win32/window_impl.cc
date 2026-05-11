@@ -1,45 +1,44 @@
-#include <glad/wgl.h>
-
 #include <fg/graphics/opengl/gl.h>
+#include <fg/utils/utils.h>
+#include <glad/wgl.h>
+#ifdef CreateWindow
+#undef CreateWindow
+#endif
+
 #include "fg/utils/log.h"
-#include "fg/window/registry.h"
-#include "fg/window/win32/console.h"
+#include "fg/window/internal.h"
+#include "fg/window/win32/utils.h"
 #include "fg/window/win32/window_impl.h"
 #include "fg/window/win32/window_proc.h"
-#include "fg/window/window_internal.h"
 
-namespace fg::window::win32 {
-namespace {
+namespace fg::window {
+namespace win32 {
 bool GLInit(HWND hwnd, HDC hdc);
 void FetchEvent();
-}  // namespace
+}  // namespace win32
 
-Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, WindowBase* base) {
-    WindowState* state = GetMutableState(base);
-    window_id_ = state->id;
+Window::WindowImpl::WindowImpl(const WindowConfig& config) {
+    window_id_ = Window::GetNewWindowID();
+    win32::utils::CreateConsole();
 
     HINSTANCE hInstance = GetModuleHandleW(NULL);
     const wchar_t class_name[] = L"WindowClass";
     WNDCLASSW wc = {};
 
     wc.hInstance = hInstance;
-    wc.lpfnWndProc = WindowProc;
+    wc.lpfnWndProc = win32::WindowProc;
     wc.lpszClassName = class_name;
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);  // 默认背景色
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);       // 默认光标
     wc.style = CS_DBLCLKS;
 
-    if (!RegisterClassW(&wc)) {
-        MessageBoxW(
-          NULL, L"register class window error", L"Error", MB_ICONERROR);
-        exit(1);
-    }
+    CHECK(RegisterClassW(&wc)) << "register class window failed";
 
     create_window_ready_flag_ = false;
     hwnd_ = CreateWindowExW(
       0,  // style
       wc.lpszClassName,
-      window_name,
+      win32::utils::ToWString(config.name).c_str(),
       WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT,
       CW_USEDEFAULT,
@@ -48,53 +47,35 @@ Win32WindowImpl::Win32WindowImpl(const WindowConfig& config, WindowBase* base) {
       NULL,  // 没有 parent
       NULL,  // 暂时没有 menu
       hInstance,
-      this  // 直接传入 Win32WindowImpl* 就行了，主要是为了处理退出逻辑
+      this  // 直接传入 WindowImpl* 就行了，主要是为了处理退出逻辑
     );
     create_window_ready_flag_ = true;
 
-    state->height = config.height;
-    state->width = config.width;
+    CHECK(hwnd_) << "CreateWindowExW failed, error: " << GetLastError();
 
     // 获取窗口 hdc，记得 release (这个操作在 window proc)
     hdc_ = GetDC(hwnd_);
 
-    if (!GLInit(hwnd_, hdc_)) {
-        MessageBoxW(NULL, L"GLinit error", L"Error", MB_ICONERROR);
-    }
+    CHECK(win32::GLInit(hwnd_, hdc_)) << "OpenGL init failed";
 
-    WindowRegisterInfo reg_info;
-    reg_info.id = window_id_;
-    reg_info.window = base;
-    RegisterWindow(reg_info);
-
-    event::SetFetchEvent(FetchEvent);
+    fg::window::event::SetFetchEventHook(win32::FetchEvent);
 
     ShowWindow(hwnd_, SW_SHOW);
     UpdateWindow(hwnd_);  // 这个接口是让 WM_PAINT 消息提高优先级
 }
 
-Window::~Window() {
+Window::WindowImpl::~WindowImpl() {
     if (hwnd_) {
         DestroyWindow(hwnd_);
     }
     UnregisterWindow(window_id_);
 }
 
-void Win32WindowImpl::SwapBuffer() const { SwapBuffers(hdc_); }
-
-HDC Window::GetHDC() const { return hdc_; }
-HWND Window::GetHWND() const { return hwnd_; }
-unsigned int Win32WindowImpl::GetID() const { return window_id_; }
-
-namespace {
+namespace win32 {
 
 void FetchEvent() {
-    float sys_dispatch_msg_limit = 0.001f;
     MSG msg;
-    float peek_begin_time = GetTime();
-    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) &&
-           GlobalEventList.Count() < GlobalEventList.Capacity &&
-           GetTime() < peek_begin_time + sys_dispatch_msg_limit) {
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
@@ -209,6 +190,6 @@ bool GLInit(HWND hwnd, HDC hdc) {
 
     return true;
 }
-}  // namespace
+}  // namespace win32
 
-}  // namespace fg::window::win32
+}  // namespace fg::window

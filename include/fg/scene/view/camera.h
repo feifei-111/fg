@@ -2,10 +2,12 @@
 
 #include <glm/glm.hpp>
 
+#include <fg/macros.h>
+
 namespace fg::scene::view {
 
 // 暂时只支持 yaw + pitch，roll 一般需要用四元数来表示
-class EulerAngleCamera {
+class FG_API EulerAngleCamera {
     glm::vec3 position_;
     float pitch_;  // 俯仰角 in degree
     float yaw_;    // 偏向 in degree

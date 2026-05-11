@@ -12,35 +12,21 @@ namespace fg::window::event {
 using Button = fg::window::Button;
 using ButtonMove = fg::window::ButtonMove;
 
-#ifdef _WIN32
-struct Win32Event {
-    unsigned int win_msg;
-    long long wparam;
-    long long lparam;
-
-    // 这里很蠢，按理说这个字符串是 data segment 里面固定的
-    // 如果返回 char* 其实是没问题的
-    // 但是因为要用 string，这里隐式产生了 string
-    // 变量，这个变量会被析构，所以还是不能用
-    std::string_view Name() const { return "Win32Event"; }
-};
-#endif
-
 // 不需要额外信息
 struct ExitEvent {
-    std::string_view Name() const { return "ExitEvent"; }
+    static std::string_view Name() { return "ExitEvent"; }
 };
 
 struct PaintEvent {
     int width;
     int height;
-    std::string_view Name() const { return "PaintEvent"; }
+    static std::string_view Name() { return "PaintEvent"; }
 };
 
 struct MouseMoveEvent {
     int x;
     int y;
-    std::string_view Name() const { return "MouseMoveEvent"; }
+    static std::string_view Name() { return "MouseMoveEvent"; }
 };
 
 struct MouseClickEvent {
@@ -48,34 +34,30 @@ struct MouseClickEvent {
     ButtonMove move;
     int x;
     int y;
-    std::string_view Name() const { return "MouseClickEvent"; }
+    static std::string_view Name() { return "MouseClickEvent"; }
 };
 
 struct MouseWheelEvent {
     int wheel_delta;
     int x;
     int y;
-    std::string_view Name() const { return "MouseWheelEvent"; }
+    static std::string_view Name() { return "MouseWheelEvent"; }
 };
 
 struct KeyBoardEvent {
     Button button;
     ButtonMove move;
-    std::string_view Name() const { return "KeyBoardEvent"; }
+    static std::string_view Name() { return "KeyBoardEvent"; }
 };
 
-using EventData = std::variant<
-#ifdef _WIN32
-  Win32Event,
-#endif
-  ExitEvent,
-  PaintEvent,
-  MouseMoveEvent,
-  MouseClickEvent,
-  MouseWheelEvent,
-  KeyBoardEvent>;
+using EventData = std::variant<ExitEvent,
+                               PaintEvent,
+                               MouseMoveEvent,
+                               MouseClickEvent,
+                               MouseWheelEvent,
+                               KeyBoardEvent>;
 
-std::string_view EventDataName(const EventData& data);
+FG_API std::string_view EventDataName(const EventData& data);
 
 struct Event {
     Event() {}
@@ -94,7 +76,7 @@ struct Event {
     EventData data;
 };
 
-void FG_API CollectEvents(bool clear_events = true);
-bool FG_API PollEvent(Event* event);
+FG_API void CollectEvents(bool clear_events = true);
+FG_API bool PollEvent(Event& event);
 
 }  // namespace fg::window::event

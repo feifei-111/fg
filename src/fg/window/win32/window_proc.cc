@@ -2,24 +2,21 @@
 
 #include <glad/gl.h>
 
-#include <fg/winodw/event.h>
+#include <fg/window/event.h>
 #include "fg/utils/log.h"
-#include "fg/window/event_internal.h"
+#include "fg/window/internal.h"
 #include "fg/window/win32/window_impl.h"
 #include "fg/window/win32/window_proc.h"
 
 namespace fg::window::win32 {
 
 namespace fg_event = fg::window::event;
-using Event = fg_event::Event;
 using Button = fg::window::Button;
 using ButtonMove = fg::window::ButtonMove;
+using WindowImpl = fg::window::Window::WindowImpl;
 
 namespace {
-void PushMouseClickEvent(Event* event,
-                         Button button,
-                         ButtonMove move,
-                         LPARAM lparam);
+
 Button GetButtonFromVK(WPARAM wparam);
 }  // namespace
 
@@ -30,162 +27,211 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
     VLOG(9) << "WindowProc GetMsg: " << uMsg << ", " << wParam << ", "
             << lParam;
 
-    Win32WindowImpl* window_impl =
-      reinterpret_cast<Win32WindowImpl*> GetWindowLongPtrW(hwnd, GWLP_USERDATA);
+    WindowImpl* window_impl = reinterpret_cast<WindowImpl*>(
+      GetWindowLongPtrW(hwnd, GWLP_USERDATA));
 
-    // 初始化未完成
-    if (!window_impl->create_window_ready_flag_) {
+    // GWLP_USERDATA 在 WM_NCCREATE 之前还没设置，此时为空
+    if (!window_impl || !window_impl->IsReady()) {
         switch (uMsg) {
-            case WM_NCCREATE:
+            case WM_NCCREATE: {
                 auto user_data =
                   (LONG_PTR)(((CREATESTRUCT*)lParam)->lpCreateParams);
                 CHECK(user_data)
                   << "lpParams(user data) not exist, Win32 window init failed";
                 SetWindowLongPtrW(hwnd, GWLP_USERDATA, user_data);
                 return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+            }
             default:
                 return DefWindowProcW(hwnd, uMsg, wParam, lParam);
         }
     }
 
-    CHECK(window_impl->GetHWND() != hwnd)
+    CHECK(window_impl->GetHWND() == hwnd)
       << "Win32Data and hwnd is not correlated!";
-
-    Event* next_event = fg_event::PrepareNextEvent(window_impl->GetID());
 
     switch (uMsg) {
         case WM_DESTROY:
             ReleaseDC(hwnd, window_impl->GetHDC());
             PostQuitMessage(0);
-            next_event->data.emplace<fg_event::ExitEvent>();
-            fg_event::PrepareEventDone();
+            fg_event::EmplaceEvent<fg_event::ExitEvent>(window_impl->GetID());
             return 0;
 
         case WM_PAINT:
             // 不考虑局部重绘，GetWindowRect 获取整个 window size
             RECT window_rect;
             GetWindowRect(hwnd, &window_rect);
-            next_event->data.emplace<fg_event::PaintEvent>();
-            auto& event_data = std::get<fg_event::PaintEvent>(next_event->data);
-            event_data.width = window_rect.right - window_rect.left;
-            event_data.height = window_rect.bottom - window_rect.top;
-            fg_event::PrepareEventDone();
+            fg_event::EmplaceEvent<fg_event::PaintEvent>(
+              window_impl->GetID(),
+              window_rect.bottom - window_rect.top,  // height
+              window_rect.right - window_rect.left   // width
+            );
             // 我们并不自己去重新渲染，应该是游戏逻辑自己去做这件事
             // glViewport(0, 0, state->width, state->height);
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_MOUSEMOVE:
-            next_event->data.emplace<fg_event::MouseMoveEvent>();
-            auto& event_data =
-              std::get<fg_event::MouseMoveEvent>(next_event->data);
-            event_data.x = GET_X_LPARAM(lParam);
-            event_data.y = GET_Y_LPARAM(lParam);
-            fg_event::PrepareEventDone();
+            fg_event::EmplaceEvent<fg_event::MouseMoveEvent>(
+              window_impl->GetID(),
+              GET_X_LPARAM(lParam),  // x
+              GET_Y_LPARAM(lParam)   // y
+            );
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_MOUSEWHEEL:
-            event->data.emplace<>(fg_event::MouseWheelEvent);
-            auto& event_data = std::get<fg_event::MouseWheelEvent>(event->data);
-            event_data.wheel_delta = GET_WHEEL_DELTA_WPARAM(wParam);
-            event_data.x = GET_X_LPARAM(lParam);
-            event_data.y = GET_Y_LPARAM(lParam);
-            fg_event::PrepareEventDone();
+            fg_event::EmplaceEvent<fg_event::MouseWheelEvent>(
+              window_impl->GetID(),
+              GET_WHEEL_DELTA_WPARAM(wParam),  // wheel delta
+              GET_X_LPARAM(lParam),            // x
+              GET_Y_LPARAM(lParam)             // y
+            );
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_LBUTTONDOWN:
-            PushMouseClickEvent(
-              next_event, Button::MS_LBUTTON, ButtonMove::DOWN, lParam);
+            fg_event::EmplaceEvent<fg_event::MouseClickEvent>(
+              window_impl->GetID(),
+              Button::MS_LBUTTON,    // button
+              ButtonMove::DOWN,      // move
+              GET_X_LPARAM(lParam),  // x
+              GET_Y_LPARAM(lParam)   // y
+            );
             SetCapture(hwnd);
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_LBUTTONUP:
-            PushMouseClickEvent(
-              next_event, Button::MS_LBUTTON, ButtonMove::UP, lParam);
+            fg_event::EmplaceEvent<fg_event::MouseClickEvent>(
+              window_impl->GetID(),
+              Button::MS_LBUTTON,    // button
+              ButtonMove::UP,        // move
+              GET_X_LPARAM(lParam),  // x
+              GET_Y_LPARAM(lParam)   // y
+            );
             ReleaseCapture();
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         // double click 不会影响单独的 down up msg，会在第二次的 down up
         // 之间插入一个额外的 msg
         case WM_LBUTTONDBLCLK:
-            PushMouseClickEvent(
-              next_event, Button::MS_LBUTTON, ButtonMove::DCLICK, lParam);
+            fg_event::EmplaceEvent<fg_event::MouseClickEvent>(
+              window_impl->GetID(),
+              Button::MS_LBUTTON,    // button
+              ButtonMove::DCLICK,    // move
+              GET_X_LPARAM(lParam),  // x
+              GET_Y_LPARAM(lParam)   // y
+            );
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_RBUTTONDOWN:
-            PushMouseClickEvent(
-              next_event, Button::MS_RBUTTON, ButtonMove::DOWN, lParam);
+            fg_event::EmplaceEvent<fg_event::MouseClickEvent>(
+              window_impl->GetID(),
+              Button::MS_RBUTTON,    // button
+              ButtonMove::DOWN,      // move
+              GET_X_LPARAM(lParam),  // x
+              GET_Y_LPARAM(lParam)   // y
+            );
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_RBUTTONUP:
-            PushMouseClickEvent(
-              next_event, Button::MS_RBUTTON, ButtonMove::UP, lParam);
+            fg_event::EmplaceEvent<fg_event::MouseClickEvent>(
+              window_impl->GetID(),
+              Button::MS_RBUTTON,    // button
+              ButtonMove::UP,        // move
+              GET_X_LPARAM(lParam),  // x
+              GET_Y_LPARAM(lParam)   // y
+            );
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_RBUTTONDBLCLK:
-            PushMouseClickEvent(
-              next_event, Button::MS_RBUTTON, ButtonMove::DCLICK, lParam);
+            fg_event::EmplaceEvent<fg_event::MouseClickEvent>(
+              window_impl->GetID(),
+              Button::MS_RBUTTON,    // button
+              ButtonMove::DCLICK,    // move
+              GET_X_LPARAM(lParam),  // x
+              GET_Y_LPARAM(lParam)   // y
+            );
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_MBUTTONDOWN:
-            PushMouseClickEvent(
-              next_event, Button::MS_MBUTTON, ButtonMove::DOWN, lParam);
+            fg_event::EmplaceEvent<fg_event::MouseClickEvent>(
+              window_impl->GetID(),
+              Button::MS_MBUTTON,    // button
+              ButtonMove::DOWN,      // move
+              GET_X_LPARAM(lParam),  // x
+              GET_Y_LPARAM(lParam)   // y
+            );
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_MBUTTONUP:
-            PushMouseClickEvent(
-              next_event, Button::MS_MBUTTON, ButtonMove::UP, lParam);
+            fg_event::EmplaceEvent<fg_event::MouseClickEvent>(
+              window_impl->GetID(),
+              Button::MS_MBUTTON,    // button
+              ButtonMove::UP,        // move
+              GET_X_LPARAM(lParam),  // x
+              GET_Y_LPARAM(lParam)   // y
+            );
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_MBUTTONDBLCLK:
-            PushMouseClickEvent(
-              next_event, Button::MS_MBUTTON, ButtonMove::DCLICK, lParam);
+            fg_event::EmplaceEvent<fg_event::MouseClickEvent>(
+              window_impl->GetID(),
+              Button::MS_MBUTTON,    // button
+              ButtonMove::DCLICK,    // move
+              GET_X_LPARAM(lParam),  // x
+              GET_Y_LPARAM(lParam)   // y
+            );
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_XBUTTONDOWN:
-            PushMouseClickEvent(next_event,
-                                (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
-                                  ? Button::MS_XBUTTON1
-                                  : Button::MS_XBUTTON2,
-                                ButtonMove::DOWN,
-                                lParam);
+            fg_event::EmplaceEvent<fg_event::MouseClickEvent>(
+              window_impl->GetID(),
+              (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
+                ? Button::MS_XBUTTON1
+                : Button::MS_XBUTTON2,  // button
+              ButtonMove::DOWN,         // move
+              GET_X_LPARAM(lParam),     // x
+              GET_Y_LPARAM(lParam)      // y
+            );
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_XBUTTONUP:
-            PushMouseClickEvent(next_event,
-                                (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
-                                  ? Button::MS_XBUTTON1
-                                  : Button::MS_XBUTTON2,
-                                ButtonMove::UP,
-                                lParam);
+            fg_event::EmplaceEvent<fg_event::MouseClickEvent>(
+              window_impl->GetID(),
+              (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
+                ? Button::MS_XBUTTON1
+                : Button::MS_XBUTTON2,  // button
+              ButtonMove::UP,           // move
+              GET_X_LPARAM(lParam),     // x
+              GET_Y_LPARAM(lParam)      // y
+            );
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_XBUTTONDBLCLK:
-            PushMouseClickEvent(next_event,
-                                (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
-                                  ? Button::MS_XBUTTON1
-                                  : Button::MS_XBUTTON2,
-                                ButtonMove::DCLICK,
-                                lParam);
+            fg_event::EmplaceEvent<fg_event::MouseClickEvent>(
+              window_impl->GetID(),
+              (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
+                ? Button::MS_XBUTTON1
+                : Button::MS_XBUTTON2,  // button
+              ButtonMove::DCLICK,       // move
+              GET_X_LPARAM(lParam),     // x
+              GET_Y_LPARAM(lParam)      // y
+            );
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_KEYDOWN:
-            event->data.emplace<fg_event::KeyBoardEvent>();
-            auto& event_data = std::get<fg_event::KeyBoardEvent>(event->data);
-
-            event_data.button = GetButtonFromVK(wParam);
-            event_data.move = ButtonMove::DOWN;
+            fg_event::EmplaceEvent<fg_event::KeyBoardEvent>(
+              window_impl->GetID(),
+              GetButtonFromVK(wParam),  // button
+              ButtonMove::DOWN          // move
+            );
             // 感觉 repeat 也没什么用，还是不记录了
-            // event.data.keyboard_event.repeat = LOWORD(lParam);
-            fg_event::PrepareEventDone();
+            // repeat = LOWORD(lParam);
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_KEYUP:
-            event->data.emplace<fg_event::KeyBoardEvent>();
-            auto& event_data = std::get<fg_event::KeyBoardEvent>(event->data);
-            event_data.button = GetButtonFromVK(wParam);
-            event_data.move = ButtonMove::UP;
-            // event.data.keyboard_event.repeat = LOWORD(lParam);
-            fg_event::PrepareEventDone();
+            fg_event::EmplaceEvent<fg_event::KeyBoardEvent>(
+              window_impl->GetID(),
+              GetButtonFromVK(wParam),  // button
+              ButtonMove::UP            // move
+            );
             return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 
         case WM_CHAR:  // 支持游戏内文本输入需要用，暂时不搞
@@ -194,28 +240,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
         case WM_SYSKEYUP:
 
         default:
-            event->data.emplace<fg_event::Win32Event>();
-            auto& event_data = std::get<fg_event::Win32Event>(event->data);
-            event_data.win_msg = uMsg;
-            event_data.wparam = wParam;
-            event_data.lparam = lParam;
-            fg_event::PrepareEventDone();
-            return DefWindowProcW(hwnd, uMsg, wParam, lParam);  // 默认消息处理
+            return DefWindowProcW(hwnd, uMsg, wParam, lParam);
     }
 }
 namespace {
-void PushMouseClickEvent(Event* event,
-                         Button button,
-                         ButtonMove move,
-                         LPARAM lparam) {
-    event->data.emplace<fg_event::MouseClickEvent>();
-    auto& event_data = std::get<fg_event::MouseClickEvent>(event->data);
-    event_data.button = button;
-    event_data.move = move;
-    event_data.x = GET_X_LPARAM(lparam);
-    event_data.y = GET_Y_LPARAM(lparam);
-    fg_event::PrepareEventDone();
-}
 
 Button GetButtonFromVK(WPARAM wparam) {
     switch (wparam) {

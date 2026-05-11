@@ -83,7 +83,7 @@ const std::string ToString(const glm::mat4& mat) {
 /* ============================== path ================================== */
 /* ====================================================================== */
 
-const std::string GetRuntimeAbsPath(const std::string& relative_path) {
+const std::string AbsPath(const std::string& relative_path) {
     char buffer[512] = {0};
     int success =
       wai_getExecutablePath(buffer, 512, NULL);  // 一个 c 库，所以用 NULL

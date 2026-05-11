@@ -1,14 +1,25 @@
+#include "fg/window/win32/utils.h"
 
 #include <Windows.h>
 #include <fcntl.h>
+#include <fg/utils/utils.h>
 #include <io.h>
 #include <cstdio>
 
-#include <fg/utils/utils.h>
+namespace fg::window::win32::utils {
 
-namespace fg::utils::win32 {
+std::wstring ToWString(const char* str) {
+    int len = MultiByteToWideChar(CP_UTF8, 0, str, -1, nullptr, 0);
+    std::wstring result(len - 1, 0);
+    MultiByteToWideChar(CP_UTF8, 0, str, -1, result.data(), len);
+    return result;
+}
 
 void CreateConsole() {
+    static bool created = false;
+    if (created) return;
+    created = true;
+
     AllocConsole();
 
     HANDLE hStdHandle;
@@ -36,4 +47,4 @@ void CreateConsole() {
     SetConsoleTitle(L"FEI_console");
 }
 
-}  // namespace fg::utils::win32
+}  // namespace fg::window::win32::utils

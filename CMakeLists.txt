@@ -44,9 +44,7 @@ target_include_directories(
 )
 
 # ====================== 依赖的 third party ======================
-find_package(assimp REQUIRED)
-find_package(glog REQUIRED)
-find_package(glm REQUIRED)
+include(cmake/dependencies.cmake)
 
 # glm 可以暴露依赖，因为可能确实要用 glm 接口
 # glm 提前编了一些模版实现，有 glm::glm 和 glm::glm-header-only 两个空间
@@ -121,7 +119,7 @@ endif()
 # ====================== build flags ======================
 add_library(build_flags INTERFACE)
 
-target_compile_features(build_flags INTERFACE cxx_std_17)
+target_compile_features(build_flags INTERFACE cxx_std_20)
 
 option(USE_VLOG "use vlog in fg" OFF)
 if (USE_VLOG)
@@ -141,13 +139,23 @@ target_link_libraries(fg PUBLIC build_flags)
 add_library(export_flags INTERFACE)
 # when using glog and fg is dylib, so need define EXPORT flag (for win)
 target_compile_definitions(export_flags INTERFACE
-    FG_EXPORT 
-    GLOG_USE_GLOG_EXPORT 
+    FG_USE_FG_EXPORT
+    FG_EXPORT_BUILD
+    GLOG_USE_GLOG_EXPORT
     GLOG_NO_ABBREVIATED_SEVERITIES
-    FG_EXPORT
+    GLAD_API_CALL_EXPORT
+    GLAD_API_CALL_EXPORT_BUILD
 )
 # 这个私有，不应该导出
 target_link_libraries(fg PRIVATE export_flags)
+
+# glad 消费方需要 GLAD_API_CALL_EXPORT 才能 dllimport glad 符号
+if(WIN32)
+    target_compile_definitions(fg PUBLIC
+        FG_USE_FG_EXPORT
+        GLAD_API_CALL_EXPORT
+    )
+endif()
 
 # ====================== install ======================
 # install fg
