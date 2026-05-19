@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Build directories
+/build/
+
+# IDE / editor
+.vscode/
+
+# clangd / tooling
+.cache/
+compile_commands.json
+
+# Logs
+*.log
